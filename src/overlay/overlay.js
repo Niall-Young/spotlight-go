@@ -9,6 +9,8 @@
   let composing = false;
   let cssPromise = null;
   let pendingKeys = null;
+  let bufferTimer = 0;
+  const TRIGGER_FALLBACK_MS = 1000;
 
   function loadCss() {
     if (!cssPromise) {
@@ -39,6 +41,8 @@
   function stopKeyBuffer() {
     if (pendingKeys === null) return;
     pendingKeys = null;
+    clearTimeout(bufferTimer);
+    bufferTimer = 0;
     window.removeEventListener('keydown', bufferKeydown, true);
   }
 
@@ -64,6 +68,47 @@
       onInput();
     }
   }
+
+  // 快捷键 keydown 到 content script 收到唤起消息之间存在空窗
+  // （service worker 冷启动可达数百毫秒），期间敲下的字符会落进
+  // 宿主页面当前聚焦的输入框，即“首字母丢失”。故在页面内识别到
+  // 快捷键按下时立即开始缓冲，不等消息。
+  function matchesShortcut(event) {
+    if (event.metaKey) return false;
+    if (event.altKey && !event.ctrlKey && !event.shiftKey) return event.code === 'Space';
+    if (event.ctrlKey && event.shiftKey && !event.altKey) return event.code === 'KeyK';
+    return false;
+  }
+
+  function watchTrigger(event) {
+    if (host || pendingKeys !== null) return;
+    if (!matchesShortcut(event)) return;
+    startKeyBuffer();
+    // 快捷键被改绑或唤起失败时不能一直吞键：超时后把缓冲字符
+    // 还原回当时聚焦的输入框，当作没有拦截过
+    bufferTimer = setTimeout(() => {
+      if (pendingKeys === null) return;
+      const text = pendingKeys;
+      stopKeyBuffer();
+      restoreBufferedText(text);
+    }, TRIGGER_FALLBACK_MS);
+  }
+
+  function restoreBufferedText(text) {
+    if (!text) return;
+    const el = document.activeElement;
+    if (
+      (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) &&
+      typeof el.selectionStart === 'number'
+    ) {
+      el.setRangeText(text, el.selectionStart, el.selectionEnd, 'end');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (el && el.isContentEditable) {
+      document.execCommand('insertText', false, text);
+    }
+  }
+
+  window.addEventListener('keydown', watchTrigger, true);
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type === 'show-overlay') {
@@ -130,13 +175,10 @@
       return;
     }
     if (composing) return;
-    if (event.key === 'ArrowDown') {
+    if (event.key === 'Tab') {
+      // Tab 向下选择、Shift+Tab 向上选择，焦点始终锁在浮层内
       event.preventDefault();
-      panel.moveSelection(1);
-      updateFooter(input.value.trim());
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      panel.moveSelection(-1);
+      panel.moveSelection(event.shiftKey ? -1 : 1);
       updateFooter(input.value.trim());
     } else if (event.key === 'Enter') {
       event.preventDefault();
@@ -150,9 +192,6 @@
           closeOverlay();
         }
       }
-    } else if (event.key === 'Tab') {
-      // 焦点锁在浮层内
-      event.preventDefault();
     }
   }
 
@@ -172,7 +211,9 @@
     try {
       css = await loadCss();
     } catch (_) {
+      const text = pendingKeys;
       stopKeyBuffer();
+      restoreBufferedText(text);
       return;
     }
     if (host) {
