@@ -9,6 +9,10 @@ Chrome 扩展（Manifest V3）：快捷键唤起的 Spotlight 风格聚焦搜索
 - `src/overlay/` 以 closed Shadow DOM 注入任意页面（`matches: <all_urls>`），样式必须与宿主页面完全隔离，不得依赖或泄漏全局 CSS。
 - 搜索聚合与打开结果都在 `src/background/service-worker.js` 中完成；页面侧只通过 `chrome.runtime` 消息通信。
 
+## 工作流
+
+- 每次代码改动完成后都必须过三个 gate：先按 `agents-gen` 技能检查并维护 `AGENTS.md`（无变化则报告 unchanged），再按 `good-readme` 技能检查并维护 `README.md`，最后按 `gitwork` 技能隔离提交任务改动。
+
 ## 验证
 
 - 无测试与 lint 配置。验证方式：`chrome://extensions` 开启开发者模式后「加载已解压的扩展程序」，修改源码后点击扩展的刷新按钮重载。
