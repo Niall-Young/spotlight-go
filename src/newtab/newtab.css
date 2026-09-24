@@ -247,10 +247,13 @@ body::after {
   width: min(760px, 100%);
 }
 
-/* 宫格分页做成横向滑动轨道：翻页即平移，轨道高度恒为最高一页，切换时布局不抖动 */
+/* 宫格分页做成横向滑动轨道：翻页即平移，轨道高度恒为最高一页，切换时布局不抖动；
+   overflow 裁剪会切掉瓦片 hover 阴影，用内边距 + 负外边距给阴影留出出血空间 */
 .nt-grid-viewport {
   width: 100%;
   overflow: hidden;
+  padding: 18px;
+  margin: -18px;
 }
 
 .nt-grid-track {
