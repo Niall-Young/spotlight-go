@@ -1,21 +1,17 @@
 (function () {
   'use strict';
 
-  const MAX_TILES = 8;
-  const PINNED_KEY = 'pinnedShortcuts';
+  const SHORTCUTS_KEY = 'pinnedShortcuts';
 
   const input = document.getElementById('nt-input');
   const resultsEl = document.getElementById('nt-results');
   const grid = document.getElementById('nt-grid');
-  const footerText = document.getElementById('nt-footer-text');
   const contextMenu = document.getElementById('nt-context-menu');
   const modalMask = document.getElementById('nt-modal-mask');
   const modalUrl = document.getElementById('nt-modal-url');
   const modalTitle = document.getElementById('nt-modal-title');
   const modalOk = document.getElementById('nt-modal-ok');
   const modalCancel = document.getElementById('nt-modal-cancel');
-
-  const DEFAULT_FOOTER = 'Enter 搜索 · ⌘⇧K 任意页面唤起浮层';
 
   let searchSeq = 0;
   let debounceTimer = null;
@@ -63,20 +59,7 @@
       if (chrome.runtime.lastError) return;
       if (seq !== searchSeq) return;
       panel.render(response?.groups, query);
-      updateFooter(query);
     });
-  }
-
-  function updateFooter(query) {
-    if (!query) {
-      footerText.textContent = DEFAULT_FOOTER;
-    } else if (panel.hasItems()) {
-      footerText.textContent = '↑↓ 选择 · Enter 打开';
-    } else {
-      footerText.textContent = looksLikeUrl(query)
-        ? `Enter 前往 ${query}`
-        : `Enter 搜索 “${query}”`;
-    }
   }
 
   input.addEventListener('input', () => {
@@ -85,7 +68,6 @@
     if (!query) {
       searchSeq++;
       panel.clear();
-      updateFooter('');
       return;
     }
     debounceTimer = setTimeout(() => sendSearch(query), 200);
@@ -98,7 +80,6 @@
         input.value = '';
         searchSeq++;
         panel.clear();
-        updateFooter('');
       }
       return;
     }
@@ -144,54 +125,36 @@
     }
   }
 
-  function loadPinned() {
+  function loadShortcuts() {
     return new Promise((resolve) => {
-      chrome.storage.local.get(PINNED_KEY, (data) => {
-        resolve(Array.isArray(data[PINNED_KEY]) ? data[PINNED_KEY] : []);
+      chrome.storage.local.get(SHORTCUTS_KEY, (data) => {
+        resolve(Array.isArray(data[SHORTCUTS_KEY]) ? data[SHORTCUTS_KEY] : []);
       });
     });
   }
 
-  function savePinned(pinned) {
+  function saveShortcuts(shortcuts) {
     return new Promise((resolve) => {
-      chrome.storage.local.set({ [PINNED_KEY]: pinned }, resolve);
-    });
-  }
-
-  function getTopSites() {
-    return new Promise((resolve) => {
-      chrome.topSites.get((sites) => resolve(Array.isArray(sites) ? sites : []));
+      chrome.storage.local.set({ [SHORTCUTS_KEY]: shortcuts }, resolve);
     });
   }
 
   async function renderGrid() {
-    const [pinned, topSites] = await Promise.all([loadPinned(), getTopSites()]);
-    const entries = [];
-    const seen = new Set();
-    for (const p of pinned) {
-      if (!p || !p.url || seen.has(p.url)) continue;
-      seen.add(p.url);
-      entries.push({ title: p.title || hostOf(p.url), url: p.url, pinned: true });
-    }
-    for (const s of topSites) {
-      if (entries.length >= MAX_TILES) break;
-      if (!s.url || seen.has(s.url)) continue;
-      seen.add(s.url);
-      entries.push({ title: s.title || hostOf(s.url), url: s.url, pinned: false });
-    }
-
+    const shortcuts = await loadShortcuts();
     grid.textContent = '';
-    for (const entry of entries) {
-      grid.appendChild(buildTile(entry));
+    for (const entry of shortcuts) {
+      if (!entry || !entry.url) continue;
+      grid.appendChild(buildTile({
+        title: entry.title || hostOf(entry.url),
+        url: entry.url
+      }));
     }
-    if (entries.length < MAX_TILES) {
-      grid.appendChild(buildAddTile());
-    }
+    grid.appendChild(buildAddTile());
   }
 
   function buildTile(entry) {
     const tile = document.createElement('div');
-    tile.className = 'nt-tile' + (entry.pinned ? ' nt-tile-pin' : '');
+    tile.className = 'nt-tile';
     tile.title = entry.url;
 
     const icon = document.createElement('div');
@@ -239,23 +202,16 @@
   function showContextMenu(x, y, entry) {
     menuEntry = entry;
     contextMenu.textContent = '';
-    const toggle = document.createElement('button');
-    toggle.type = 'button';
-    toggle.textContent = entry.pinned ? '取消固定' : '固定';
-    toggle.addEventListener('click', async () => {
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = '删除';
+    remove.addEventListener('click', async () => {
       hideContextMenu();
-      const pinned = await loadPinned();
-      if (entry.pinned) {
-        await savePinned(pinned.filter((p) => p.url !== entry.url));
-      } else {
-        await savePinned([
-          ...pinned.filter((p) => p.url !== entry.url),
-          { title: entry.title, url: entry.url }
-        ]);
-      }
+      const shortcuts = await loadShortcuts();
+      await saveShortcuts(shortcuts.filter((s) => s.url !== entry.url));
       renderGrid();
     });
-    contextMenu.appendChild(toggle);
+    contextMenu.appendChild(remove);
 
     const openNew = document.createElement('button');
     openNew.type = 'button';
@@ -312,9 +268,9 @@
       return;
     }
     const title = modalTitle.value.trim() || hostOf(url);
-    const pinned = await loadPinned();
-    await savePinned([
-      ...pinned.filter((p) => p.url !== url),
+    const shortcuts = await loadShortcuts();
+    await saveShortcuts([
+      ...shortcuts.filter((s) => s.url !== url),
       { title, url }
     ]);
     closeModal();
