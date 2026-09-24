@@ -90,7 +90,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 | *Right-Click* | New Tab Tile | Open context menu (Edit / Delete / Open in new tab) |
 
 > [!TIP]
-> Click **更改** (Change) in the settings modal, press a new key combo, and save — the overlay then listens for it on regular pages. Chrome does not allow extensions to reprogram browser-level shortcuts, so the default hotkey remains active as a fallback (including on `chrome://` pages) and can still be managed at `chrome://extensions/shortcuts`.
+> Click **更改** (Change) in the settings modal, press a new key combo, and save — the overlay then listens for it on regular pages. Chrome does not allow extensions to reprogram browser-level shortcuts, so the default hotkey remains active as a fallback (including on `chrome://` pages) and can still be managed at `chrome://extensions/shortcuts`. The browser-level hotkey itself is intercepted by Chrome before the page sees it, so it cannot be captured in the press-to-capture box; it is temporarily ignored while you are recording a new combo.
 
 ---
 

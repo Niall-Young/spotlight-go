@@ -28,6 +28,7 @@
   const settingsShortcutEdit = document.getElementById('nt-settings-shortcut-edit');
   const settingsShortcutCapture = document.getElementById('nt-settings-shortcut-capture');
   const settingsShortcutPreview = document.getElementById('nt-settings-shortcut-preview');
+  const settingsShortcutHint = document.getElementById('nt-settings-shortcut-hint');
   const settingsShortcutSave = document.getElementById('nt-settings-shortcut-save');
   const settingsShortcutCancel = document.getElementById('nt-settings-shortcut-cancel');
   const sourceBookmark = document.getElementById('nt-settings-source-bookmark');
@@ -344,22 +345,65 @@
   let capturing = false;
   let capturedShortcut = null;
 
+  // 录入期间通知 background 忽略浏览器级快捷键（chrome.commands 在浏览器层
+  // 拦截按键，页面收不到 keydown，否则会直接触发唤起）
+  function setCaptureFlag(active) {
+    try {
+      chrome.runtime.sendMessage({ type: 'shortcut-capture', active });
+    } catch (_) {
+      /* 忽略：上下文失效 */
+    }
+  }
+
+  // 浏览器级快捷键会被 Chrome 拦截、无法录入，给出明确提示
+  function refreshCaptureHint() {
+    try {
+      chrome.commands.getAll((commands) => {
+        if (chrome.runtime.lastError || !capturing) return;
+        const cmd = (commands || []).find((c) => c.name === 'show-search');
+        if (cmd && cmd.shortcut) {
+          settingsShortcutHint.textContent =
+            `浏览器级快捷键 ${formatShortcutLabel(cmd.shortcut)} 会被 Chrome 直接拦截并触发唤起，无法在此录入；` +
+            '可在 chrome://extensions/shortcuts 修改或移除该绑定。';
+          settingsShortcutHint.hidden = false;
+        } else {
+          settingsShortcutHint.hidden = true;
+        }
+      });
+    } catch (_) {
+      /* 忽略：保持提示隐藏 */
+    }
+  }
+
   function startCapture() {
     capturing = true;
     capturedShortcut = null;
     settingsShortcutView.hidden = true;
     settingsShortcutCapture.hidden = false;
+    settingsShortcutHint.hidden = true;
     settingsShortcutPreview.textContent = '按下新的快捷键…';
     settingsShortcutPreview.classList.remove('nt-kbd-ready');
     settingsShortcutSave.disabled = true;
+    setCaptureFlag(true);
+    refreshCaptureHint();
   }
 
   function stopCapture() {
+    if (capturing) setCaptureFlag(false);
     capturing = false;
     capturedShortcut = null;
     settingsShortcutCapture.hidden = true;
+    settingsShortcutHint.hidden = true;
     settingsShortcutView.hidden = false;
   }
+
+  // 录入中切走或关闭标签页时解除 background 的忽略标记
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && capturing) setCaptureFlag(false);
+  });
+  window.addEventListener('pagehide', () => {
+    if (capturing) setCaptureFlag(false);
+  });
 
   // 组合键必须含修饰键，避免劫持普通输入；单独按修饰键不产生组合
   function comboFromEvent(event) {

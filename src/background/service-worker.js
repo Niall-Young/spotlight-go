@@ -14,8 +14,29 @@ const DEFAULT_SOURCES = { bookmark: true, history: true };
 
 const Rank = self.SpotlightRank;
 
+// 新标签页设置弹窗录入快捷键期间置位：浏览器级快捷键（chrome.commands）会被
+// Chrome 在浏览器层拦截，页面收不到 keydown；不忽略的话录入中按下旧快捷键
+// 会直接触发唤起/回退开新标签页
+let shortcutCapturing = false;
+let shortcutCaptureTimer = null;
+
+function setShortcutCapturing(active) {
+  shortcutCapturing = active;
+  if (shortcutCaptureTimer) {
+    clearTimeout(shortcutCaptureTimer);
+    shortcutCaptureTimer = null;
+  }
+  // 兜底：录入中新标签页被关闭时自动解除（service worker 终止也会自然清除）
+  if (active) {
+    shortcutCaptureTimer = setTimeout(() => {
+      shortcutCapturing = false;
+      shortcutCaptureTimer = null;
+    }, 10 * 60 * 1000);
+  }
+}
+
 chrome.commands.onCommand.addListener((command) => {
-  if (command === 'show-search') showOverlay();
+  if (command === 'show-search' && !shortcutCapturing) showOverlay();
 });
 
 chrome.action.onClicked.addListener(() => showOverlay());
@@ -50,6 +71,10 @@ async function tryShowOverlay(tabId) {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type === 'shortcut-capture') {
+    setShortcutCapturing(!!message.active);
+    return;
+  }
   if (message?.type === 'get-commands') {
     chrome.commands.getAll().then(sendResponse);
     return true;

@@ -555,6 +555,18 @@ body::after {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nt-settings-capture-hint {
+  flex: 1 0 100%;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sg-text-secondary);
+}
+
+.nt-settings-capture-hint[hidden] {
+  display: none;
 }
 
 .nt-settings-shortcut-capture[hidden] {
