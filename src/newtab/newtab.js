@@ -15,14 +15,14 @@
   const modalCancel = document.getElementById('nt-modal-cancel');
   const settingsFab = document.getElementById('nt-settings-fab');
   const settingsMask = document.getElementById('nt-settings-mask');
-  const settingsEditBtn = document.getElementById('nt-settings-edit');
+  const settingsList = document.getElementById('nt-settings-list');
+  const settingsAdd = document.getElementById('nt-settings-add');
   const settingsShortcut = document.getElementById('nt-settings-shortcut');
   const settingsShortcutEdit = document.getElementById('nt-settings-shortcut-edit');
   const settingsClose = document.getElementById('nt-settings-close');
 
   let searchSeq = 0;
   let composing = false;
-  let editing = false;
 
   const panel = window.SpotlightResults.create(resultsEl, {
     onSelect: (item) => openItem(item)
@@ -168,12 +168,6 @@
         url: entry.url
       }));
     }
-    if (editing) grid.appendChild(buildAddTile());
-  }
-
-  function setEditing(value) {
-    editing = value;
-    renderGrid();
   }
 
   // ---------- 设置弹窗 ----------
@@ -197,8 +191,8 @@
   }
 
   function openSettings() {
-    settingsEditBtn.textContent = editing ? '完成编辑' : '编辑';
     refreshShortcutLabel();
+    renderSettingsList();
     settingsMask.hidden = false;
   }
 
@@ -206,15 +200,66 @@
     settingsMask.hidden = true;
   }
 
+  // 设置弹窗内的快捷入口列表：新增/编辑/删除在此完成，保存后同步刷新外面宫格
+  async function renderSettingsList() {
+    const shortcuts = await loadShortcuts();
+    settingsList.textContent = '';
+    if (shortcuts.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'nt-settings-empty';
+      empty.textContent = '暂无快捷方式';
+      settingsList.appendChild(empty);
+      return;
+    }
+    for (const entry of shortcuts) {
+      if (!entry || !entry.url) continue;
+      settingsList.appendChild(buildSettingsItem(entry));
+    }
+  }
+
+  function buildSettingsItem(entry) {
+    const row = document.createElement('div');
+    row.className = 'nt-settings-item';
+
+    const img = document.createElement('img');
+    img.alt = '';
+    img.src = faviconUrl(entry.url);
+    row.appendChild(img);
+
+    const title = document.createElement('div');
+    title.className = 'nt-settings-item-title';
+    title.textContent = entry.title || hostOf(entry.url);
+    title.title = entry.url;
+    row.appendChild(title);
+
+    const edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'nt-settings-item-action';
+    edit.textContent = '编辑';
+    edit.addEventListener('click', () => openModal(entry));
+    row.appendChild(edit);
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'nt-settings-item-action';
+    remove.textContent = '删除';
+    remove.addEventListener('click', async () => {
+      const shortcuts = await loadShortcuts();
+      await saveShortcuts(shortcuts.filter((s) => s.url !== entry.url));
+      renderSettingsList();
+      renderGrid();
+    });
+    row.appendChild(remove);
+
+    return row;
+  }
+
   settingsFab.addEventListener('click', openSettings);
   settingsClose.addEventListener('click', closeSettings);
   settingsMask.addEventListener('mousedown', (event) => {
     if (event.target === settingsMask) closeSettings();
   });
-  settingsEditBtn.addEventListener('click', () => {
-    setEditing(!editing);
-    closeSettings();
-  });
+  settingsAdd.addEventListener('click', () => openModal());
   settingsShortcutEdit.addEventListener('click', () => {
     chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
   });
@@ -247,21 +292,6 @@
     return tile;
   }
 
-  function buildAddTile() {
-    const tile = document.createElement('div');
-    tile.className = 'nt-tile nt-tile-add';
-    const icon = document.createElement('div');
-    icon.className = 'nt-tile-icon';
-    icon.textContent = '+';
-    tile.appendChild(icon);
-    const title = document.createElement('div');
-    title.className = 'nt-tile-title';
-    title.textContent = '添加';
-    tile.appendChild(title);
-    tile.addEventListener('click', () => openModal());
-    return tile;
-  }
-
   // ---------- 右键菜单 ----------
 
   let menuEntry = null;
@@ -287,6 +317,7 @@
       const shortcuts = await loadShortcuts();
       await saveShortcuts(shortcuts.filter((s) => s.url !== entry.url));
       renderGrid();
+      renderSettingsList();
     });
     contextMenu.appendChild(remove);
 
@@ -314,8 +345,11 @@
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       hideContextMenu();
+      if (!modalMask.hidden) {
+        closeModal();
+        return;
+      }
       closeSettings();
-      if (editing) setEditing(false);
     }
   });
   window.addEventListener('blur', hideContextMenu);
@@ -376,6 +410,7 @@
     }
     closeModal();
     renderGrid();
+    renderSettingsList();
   }
 
   modalOk.addEventListener('click', submitModal);
