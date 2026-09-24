@@ -27,7 +27,23 @@
       <div id="nt-results" class="sg-results nt-results" role="listbox"></div>
     </div>
 
-    <div id="nt-grid" class="nt-grid"></div>
+    <div class="nt-grid-wrap">
+      <div id="nt-grid" class="nt-grid"></div>
+      <div id="nt-grid-pager" class="nt-grid-pager" hidden>
+        <button id="nt-grid-prev" class="nt-grid-nav" type="button" aria-label="上一页">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </button>
+        <button id="nt-grid-next" class="nt-grid-nav" type="button" aria-label="下一页">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 6l6 6-6 6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
   </main>
 
   <button id="nt-settings-fab" class="nt-settings-fab" type="button" title="设置"

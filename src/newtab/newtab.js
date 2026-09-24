@@ -9,6 +9,9 @@
   const input = document.getElementById('nt-input');
   const resultsEl = document.getElementById('nt-results');
   const grid = document.getElementById('nt-grid');
+  const gridPager = document.getElementById('nt-grid-pager');
+  const gridPrev = document.getElementById('nt-grid-prev');
+  const gridNext = document.getElementById('nt-grid-next');
   const contextMenu = document.getElementById('nt-context-menu');
   const settingsFab = document.getElementById('nt-settings-fab');
   const settingsMask = document.getElementById('nt-settings-mask');
@@ -167,17 +170,110 @@
     });
   }
 
+  // 宫格最多展示两行；超出时底部分页箭头翻页
+  const GRID_ROWS = 2;
+  const TILE_WIDTH = 96;
+  const TILE_GAP = 16;
+  let gridPage = 0;
+  let gridEntries = [];
+
+  function gridPageSize() {
+    const cols = Math.max(
+      1,
+      Math.floor(((grid.clientWidth || 760) + TILE_GAP) / (TILE_WIDTH + TILE_GAP))
+    );
+    return cols * GRID_ROWS;
+  }
+
   async function renderGrid() {
-    const shortcuts = await loadShortcuts();
+    gridEntries = (await loadShortcuts()).filter((s) => s && s.url);
+    renderGridPage();
+  }
+
+  function renderGridPage() {
+    const pageSize = gridPageSize();
+    const pages = Math.max(1, Math.ceil(gridEntries.length / pageSize));
+    gridPage = Math.min(Math.max(gridPage, 0), pages - 1);
     grid.textContent = '';
-    for (const entry of shortcuts) {
-      if (!entry || !entry.url) continue;
-      grid.appendChild(buildTile({
+    const start = gridPage * pageSize;
+    gridEntries.slice(start, start + pageSize).forEach((entry, i) => {
+      const tile = buildTile({
         title: entry.title || hostOf(entry.url),
         url: entry.url
-      }));
-    }
+      });
+      tile.dataset.index = String(start + i);
+      setupTileDrag(tile);
+      grid.appendChild(tile);
+    });
+    grid.classList.toggle('nt-grid-paged', pages > 1);
+    gridPager.hidden = pages <= 1;
+    gridPrev.disabled = gridPage === 0;
+    gridNext.disabled = gridPage >= pages - 1;
   }
+
+  // ---------- 宫格拖拽排序 ----------
+
+  // 拖拽经过其他瓦片时直接移动 DOM 实时预览落点；
+  // drop 时按 DOM 顺序重排 gridEntries 并持久化，dragend 统一重渲染校正索引
+  let dragTile = null;
+
+  function setupTileDrag(tile) {
+    tile.draggable = true;
+    tile.addEventListener('dragstart', (event) => {
+      dragTile = tile;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', tile.dataset.index || '');
+      // 延迟到拖拽影像生成后再加半透明，避免残影也变淡
+      requestAnimationFrame(() => tile.classList.add('nt-tile-dragging'));
+    });
+    tile.addEventListener('dragend', () => {
+      tile.classList.remove('nt-tile-dragging');
+      dragTile = null;
+      renderGridPage();
+    });
+  }
+
+  grid.addEventListener('dragover', (event) => {
+    if (!dragTile) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const target = event.target.closest('.nt-tile');
+    if (!target || target === dragTile) return;
+    const rect = target.getBoundingClientRect();
+    // 同行内按水平中点、跨行按垂直中点判断插到目标前还是后
+    const after =
+      event.clientY > rect.top + rect.height / 2 ||
+      (event.clientY > rect.top && event.clientX > rect.left + rect.width / 2);
+    grid.insertBefore(dragTile, after ? target.nextSibling : target);
+  });
+
+  grid.addEventListener('drop', (event) => {
+    if (!dragTile) return;
+    event.preventDefault();
+    const order = Array.from(grid.querySelectorAll('.nt-tile'))
+      .map((tile) => Number(tile.dataset.index))
+      .filter((i) => Number.isInteger(i));
+    if (order.length === 0) return;
+    const reordered = order.map((i) => gridEntries[i]);
+    gridEntries.splice(gridPage * gridPageSize(), reordered.length, ...reordered);
+    saveShortcuts(gridEntries);
+  });
+
+  gridPrev.addEventListener('click', () => {
+    gridPage--;
+    renderGridPage();
+  });
+  gridNext.addEventListener('click', () => {
+    gridPage++;
+    renderGridPage();
+  });
+
+  // 窗口变宽/窄会改变每行列数，需重算分页
+  let gridResizeTimer = 0;
+  window.addEventListener('resize', () => {
+    clearTimeout(gridResizeTimer);
+    gridResizeTimer = setTimeout(renderGridPage, 150);
+  });
 
   // ---------- 设置弹窗 ----------
 

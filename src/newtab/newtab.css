@@ -239,12 +239,64 @@ body::after {
 }
 
 /* 快捷方式网格 */
+.nt-grid-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: min(760px, 100%);
+}
+
 .nt-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 96px);
   justify-content: center;
   gap: 16px;
-  width: min(760px, 100%);
+  width: 100%;
+}
+
+/* 有多页时固定两行高度：末页不满两行时分页按钮不上下跳动 */
+.nt-grid.nt-grid-paged {
+  min-height: 188px;
+  align-content: start;
+}
+
+/* 网格分页：居中左右箭头 */
+.nt-grid-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.nt-grid-pager[hidden] {
+  display: none;
+}
+
+.nt-grid-nav {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--nt-tile-border);
+  background: var(--nt-tile-bg);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  color: var(--sg-text);
+  cursor: pointer;
+  transition: box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+.nt-grid-nav:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.nt-grid-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 .nt-tile {
@@ -265,6 +317,17 @@ body::after {
 
 .nt-tile:hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+/* 拖拽排序：拖动中的原位置瓦片半透明，松手后重渲染恢复 */
+.nt-tile[draggable="true"] {
+  cursor: grab;
+}
+
+.nt-tile.nt-tile-dragging {
+  opacity: 0.45;
+  cursor: grabbing;
+  box-shadow: none;
 }
 
 .nt-tile-icon {
