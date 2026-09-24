@@ -47,3 +47,7 @@ src/newtab/                新标签页
 | `favicon` | 结果与瓦片的站点图标 |
 | `scripting`、`<all_urls>` | 按快捷键时向未注入浮层的页面（如扩展重载前已打开的标签页）按需补注入浮层脚本 |
 | `https://www.google.com/complete/*`、`https://*.bing.com/osjson.aspx*` | 网页搜索建议接口 |
+
+## 开源协议
+
+本项目采用 [MIT License](LICENSE) 开源。
