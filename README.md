@@ -68,7 +68,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 * **Centered Search Card**: Auto-focused search input with a subtle light-blue animated sweep border.
 * **Shared Results Panel**: Features the same fast, grouped search results experience as the overlay.
 * **Customizable Shortcut Grid**: Responsive grid layout that auto-adapts column counts and extracts high-resolution site favicons.
-* **Floating Settings Modal**: Clean bottom-right FAB button opens a dedicated modal to add, edit, or delete quick-launch shortcuts, and view current overlay shortcuts.
+* **Floating Settings Modal**: A bottom-right FAB opens a three-section settings modal — press-to-capture a custom overlay hotkey, manage quick-launch shortcuts as inline cards, and toggle search sources (bookmarks / history).
 * **Right-Click Context Menu**: Right-click any shortcut tile to edit the URL/title, delete it, or open it in a new background tab.
 
 ### 🎨 Pure Design & Technical Elegance
@@ -90,7 +90,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 | *Right-Click* | New Tab Tile | Open context menu (Edit / Delete / Open in new tab) |
 
 > [!TIP]
-> You can customize your favorite shortcut at any time by visiting `chrome://extensions/shortcuts` in your browser.
+> Click **更改** (Change) in the settings modal, press a new key combo, and save — the overlay then listens for it on regular pages. Chrome does not allow extensions to reprogram browser-level shortcuts, so the default hotkey remains active as a fallback (including on `chrome://` pages) and can still be managed at `chrome://extensions/shortcuts`.
 
 ---
 
@@ -120,7 +120,7 @@ We believe in radical transparency. Every permission requested in `manifest.json
 
 | Permission | Purpose |
 | :--- | :--- |
-| `storage` | Stores user-configured shortcuts and local ranking selection statistics (`chrome.storage.local`). |
+| `storage` | Stores quick-launch shortcuts, the custom overlay hotkey, search-source toggles, and local ranking selection statistics (`chrome.storage.local`). |
 | `tabs` | Allows searching and switching directly to already opened tabs. |
 | `bookmarks` | Allows indexing and searching your local browser bookmarks. |
 | `history` | Allows searching recent browsing history (past 30 days). |

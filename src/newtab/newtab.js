@@ -2,23 +2,32 @@
   'use strict';
 
   const SHORTCUTS_KEY = 'pinnedShortcuts';
+  const CUSTOM_SHORTCUT_KEY = 'customShortcut';
+  const SOURCES_KEY = 'searchSources';
+  const DEFAULT_SOURCES = { bookmark: true, history: true };
 
   const input = document.getElementById('nt-input');
   const resultsEl = document.getElementById('nt-results');
   const grid = document.getElementById('nt-grid');
   const contextMenu = document.getElementById('nt-context-menu');
-  const modalMask = document.getElementById('nt-modal-mask');
-  const modalHeading = document.getElementById('nt-modal-heading');
-  const modalUrl = document.getElementById('nt-modal-url');
-  const modalTitle = document.getElementById('nt-modal-title');
-  const modalOk = document.getElementById('nt-modal-ok');
-  const modalCancel = document.getElementById('nt-modal-cancel');
   const settingsFab = document.getElementById('nt-settings-fab');
   const settingsMask = document.getElementById('nt-settings-mask');
   const settingsList = document.getElementById('nt-settings-list');
   const settingsAdd = document.getElementById('nt-settings-add');
+  const settingsForm = document.getElementById('nt-settings-form');
+  const settingsFormUrl = document.getElementById('nt-settings-form-url');
+  const settingsFormTitle = document.getElementById('nt-settings-form-title');
+  const settingsFormOk = document.getElementById('nt-settings-form-ok');
+  const settingsFormCancel = document.getElementById('nt-settings-form-cancel');
   const settingsShortcut = document.getElementById('nt-settings-shortcut');
+  const settingsShortcutView = document.getElementById('nt-settings-shortcut-view');
   const settingsShortcutEdit = document.getElementById('nt-settings-shortcut-edit');
+  const settingsShortcutCapture = document.getElementById('nt-settings-shortcut-capture');
+  const settingsShortcutPreview = document.getElementById('nt-settings-shortcut-preview');
+  const settingsShortcutSave = document.getElementById('nt-settings-shortcut-save');
+  const settingsShortcutCancel = document.getElementById('nt-settings-shortcut-cancel');
+  const sourceBookmark = document.getElementById('nt-settings-source-bookmark');
+  const sourceHistory = document.getElementById('nt-settings-source-history');
   const settingsClose = document.getElementById('nt-settings-close');
 
   let searchSeq = 0;
@@ -172,47 +181,182 @@
 
   // ---------- 设置弹窗 ----------
 
-  const DEFAULT_SHORTCUT_LABEL = /mac/i.test(navigator.platform || '')
-    ? '⌥ Space'
-    : 'Ctrl+Shift+K';
+  const IS_MAC = /mac/i.test(navigator.platform || '');
+  const DEFAULT_SHORTCUT_LABEL = IS_MAC ? '⌥ Space' : 'Ctrl+Shift+K';
 
-  function refreshShortcutLabel() {
-    // chrome.commands 快捷键由浏览器统一管理，此处只读展示；未自定义时显示 manifest 默认键
-    settingsShortcut.textContent = DEFAULT_SHORTCUT_LABEL;
-    try {
-      chrome.commands.getAll((commands) => {
-        if (chrome.runtime.lastError) return;
-        const cmd = (commands || []).find((c) => c.name === 'show-search');
-        if (cmd && cmd.shortcut) settingsShortcut.textContent = cmd.shortcut;
-      });
-    } catch (_) {
-      /* 忽略：保持默认展示 */
-    }
+  // 快捷键以 chrome.commands 字符串格式存储（如 "Alt+Space"），overlay 侧解析复用
+  function formatShortcutLabel(shortcut) {
+    if (!shortcut) return DEFAULT_SHORTCUT_LABEL;
+    const parts = shortcut.split('+');
+    const key = parts.pop();
+    const modMap = IS_MAC
+      ? { Ctrl: '⌃', Command: '⌘', Alt: '⌥', Shift: '⇧' }
+      : { Ctrl: 'Ctrl', Command: 'Meta', Alt: 'Alt', Shift: 'Shift' };
+    const mods = parts.map((p) => modMap[p] || p);
+    if (IS_MAC) return mods.join('') + (key === 'Space' ? ' Space' : key);
+    return [...mods, key].join('+');
   }
 
-  function openSettings() {
+  function refreshShortcutLabel() {
+    // 自定义快捷键优先；未自定义时读 chrome.commands 当前绑定，失败回退 manifest 默认键
+    chrome.storage.local.get(CUSTOM_SHORTCUT_KEY, (data) => {
+      if (chrome.runtime.lastError) return;
+      const custom = data[CUSTOM_SHORTCUT_KEY];
+      if (custom) {
+        settingsShortcut.textContent = formatShortcutLabel(custom);
+        return;
+      }
+      settingsShortcut.textContent = DEFAULT_SHORTCUT_LABEL;
+      try {
+        chrome.commands.getAll((commands) => {
+          if (chrome.runtime.lastError) return;
+          const cmd = (commands || []).find((c) => c.name === 'show-search');
+          if (cmd && cmd.shortcut) {
+            settingsShortcut.textContent = formatShortcutLabel(cmd.shortcut);
+          }
+        });
+      } catch (_) {
+        /* 忽略：保持默认展示 */
+      }
+    });
+  }
+
+  // 按下捕获：Chrome 不允许扩展程序化改键（无 commands.update），
+  // 这里把组合键存入 storage，overlay 的页面内监听据此唤起浮层
+  let capturing = false;
+  let capturedShortcut = null;
+
+  function startCapture() {
+    capturing = true;
+    capturedShortcut = null;
+    settingsShortcutView.hidden = true;
+    settingsShortcutCapture.hidden = false;
+    settingsShortcutPreview.textContent = '按下新的快捷键…';
+    settingsShortcutPreview.classList.remove('nt-kbd-ready');
+    settingsShortcutSave.disabled = true;
+  }
+
+  function stopCapture() {
+    capturing = false;
+    capturedShortcut = null;
+    settingsShortcutCapture.hidden = true;
+    settingsShortcutView.hidden = false;
+  }
+
+  // 组合键必须含修饰键，避免劫持普通输入；单独按修饰键不产生组合
+  function comboFromEvent(event) {
+    if (['Control', 'Shift', 'Alt', 'Meta'].includes(event.key)) return null;
+    const mods = [];
+    if (event.ctrlKey) mods.push('Ctrl');
+    if (event.metaKey) mods.push('Command');
+    if (event.altKey) mods.push('Alt');
+    if (event.shiftKey) mods.push('Shift');
+    if (mods.length === 0) return null;
+    // 键名取自 event.code（物理键位），与 overlay 端按 code 匹配的逻辑一致；
+    // 用 event.key 会在标点键（; , 等）上产出无法匹配的名字
+    const code = event.code || '';
+    let keyName;
+    if (/^Key[A-Z]$/.test(code)) keyName = code.slice(3);
+    else if (/^Digit[0-9]$/.test(code)) keyName = code.slice(5);
+    else keyName = code || event.key;
+    return [...mods, keyName].join('+');
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (!capturing) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (event.key === 'Escape') {
+      stopCapture();
+      return;
+    }
+    const combo = comboFromEvent(event);
+    if (!combo) return;
+    capturedShortcut = combo;
+    settingsShortcutPreview.textContent = formatShortcutLabel(combo);
+    settingsShortcutPreview.classList.add('nt-kbd-ready');
+    settingsShortcutSave.disabled = false;
+  }, true);
+
+  settingsShortcutEdit.addEventListener('click', startCapture);
+  settingsShortcutCancel.addEventListener('click', stopCapture);
+  settingsShortcutSave.addEventListener('click', () => {
+    if (!capturedShortcut) return;
+    chrome.storage.local.set({ [CUSTOM_SHORTCUT_KEY]: capturedShortcut }, () => {
+      stopCapture();
+      refreshShortcutLabel();
+    });
+  });
+
+  // ---------- 搜索内容开关 ----------
+
+  function loadSources() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(SOURCES_KEY, (data) => {
+        const stored = data[SOURCES_KEY];
+        resolve({ ...DEFAULT_SOURCES, ...(stored && typeof stored === 'object' ? stored : {}) });
+      });
+    });
+  }
+
+  async function renderSources() {
+    const sources = await loadSources();
+    sourceBookmark.checked = sources.bookmark;
+    sourceHistory.checked = sources.history;
+  }
+
+  async function onSourceChange() {
+    const sources = await loadSources();
+    sources.bookmark = sourceBookmark.checked;
+    sources.history = sourceHistory.checked;
+    chrome.storage.local.set({ [SOURCES_KEY]: sources });
+  }
+
+  sourceBookmark.addEventListener('change', onSourceChange);
+  sourceHistory.addEventListener('change', onSourceChange);
+
+  // ---------- 设置弹窗：打开/关闭 ----------
+
+  function openSettings(editEntry) {
+    stopCapture();
+    closeForm();
     refreshShortcutLabel();
+    renderSources();
     renderSettingsList();
     settingsMask.hidden = false;
+    if (editEntry) openForm(editEntry);
   }
 
   function closeSettings() {
+    stopCapture();
+    closeForm();
     settingsMask.hidden = true;
   }
+
+  settingsFab.addEventListener('click', () => openSettings());
+  settingsClose.addEventListener('click', closeSettings);
+  settingsMask.addEventListener('mousedown', (event) => {
+    if (event.target === settingsMask) closeSettings();
+  });
+
+  // ---------- 快捷入口：卡片列表 + 内联表单 ----------
+
+  // formEntry：undefined = 表单关闭；null = 新增；entry 对象 = 编辑该项
+  let formEntry;
 
   // 设置弹窗内的快捷入口列表：新增/编辑/删除在此完成，保存后同步刷新外面宫格
   async function renderSettingsList() {
     const shortcuts = await loadShortcuts();
     settingsList.textContent = '';
-    if (shortcuts.length === 0) {
+    const entries = shortcuts.filter((s) => s && s.url);
+    if (entries.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'nt-settings-empty';
       empty.textContent = '暂无快捷方式';
       settingsList.appendChild(empty);
       return;
     }
-    for (const entry of shortcuts) {
-      if (!entry || !entry.url) continue;
+    for (const entry of entries) {
       settingsList.appendChild(buildSettingsItem(entry));
     }
   }
@@ -221,22 +365,31 @@
     const row = document.createElement('div');
     row.className = 'nt-settings-item';
 
+    const icon = document.createElement('div');
+    icon.className = 'nt-settings-item-icon';
     const img = document.createElement('img');
     img.alt = '';
     img.src = faviconUrl(entry.url);
-    row.appendChild(img);
+    icon.appendChild(img);
+    row.appendChild(icon);
 
+    const text = document.createElement('div');
+    text.className = 'nt-settings-item-text';
     const title = document.createElement('div');
     title.className = 'nt-settings-item-title';
     title.textContent = entry.title || hostOf(entry.url);
-    title.title = entry.url;
-    row.appendChild(title);
+    const url = document.createElement('div');
+    url.className = 'nt-settings-item-url';
+    url.textContent = entry.url;
+    text.appendChild(title);
+    text.appendChild(url);
+    row.appendChild(text);
 
     const edit = document.createElement('button');
     edit.type = 'button';
     edit.className = 'nt-settings-item-action';
     edit.textContent = '编辑';
-    edit.addEventListener('click', () => openModal(entry));
+    edit.addEventListener('click', () => openForm(entry, row));
     row.appendChild(edit);
 
     const remove = document.createElement('button');
@@ -244,6 +397,7 @@
     remove.className = 'nt-settings-item-action';
     remove.textContent = '删除';
     remove.addEventListener('click', async () => {
+      if (formEntry && formEntry.url === entry.url) closeForm();
       const shortcuts = await loadShortcuts();
       await saveShortcuts(shortcuts.filter((s) => s.url !== entry.url));
       renderSettingsList();
@@ -254,14 +408,68 @@
     return row;
   }
 
-  settingsFab.addEventListener('click', openSettings);
-  settingsClose.addEventListener('click', closeSettings);
-  settingsMask.addEventListener('mousedown', (event) => {
-    if (event.target === settingsMask) closeSettings();
-  });
-  settingsAdd.addEventListener('click', () => openModal());
-  settingsShortcutEdit.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
+  // 内联表单：编辑时插入到对应卡片之后，新增时追加到列表末尾
+  function openForm(entry, afterRow) {
+    formEntry = entry || null;
+    settingsFormOk.textContent = formEntry ? '保存' : '添加';
+    settingsFormUrl.value = formEntry ? formEntry.url : '';
+    settingsFormTitle.value = formEntry ? formEntry.title || '' : '';
+    settingsForm.hidden = false;
+    settingsAdd.hidden = true;
+    if (afterRow) settingsList.insertBefore(settingsForm, afterRow.nextSibling);
+    else settingsList.appendChild(settingsForm);
+    settingsFormUrl.focus();
+  }
+
+  function closeForm() {
+    formEntry = undefined;
+    settingsForm.hidden = true;
+    settingsAdd.hidden = false;
+  }
+
+  settingsAdd.addEventListener('click', () => openForm(null));
+  settingsFormCancel.addEventListener('click', closeForm);
+
+  async function submitForm() {
+    const rawUrl = settingsFormUrl.value.trim();
+    if (!rawUrl) {
+      settingsFormUrl.focus();
+      return;
+    }
+    const url = normalizeUrl(rawUrl);
+    try {
+      new URL(url);
+    } catch (_) {
+      settingsFormUrl.focus();
+      return;
+    }
+    const title = settingsFormTitle.value.trim() || hostOf(url);
+    const shortcuts = await loadShortcuts();
+    if (formEntry) {
+      const index = shortcuts.findIndex((s) => s.url === formEntry.url);
+      const next = shortcuts.filter((s, i) => i === index || s.url !== url);
+      if (index >= 0) next[index] = { title, url };
+      else next.push({ title, url });
+      await saveShortcuts(next);
+    } else {
+      await saveShortcuts([
+        ...shortcuts.filter((s) => s.url !== url),
+        { title, url }
+      ]);
+    }
+    closeForm();
+    renderSettingsList();
+    renderGrid();
+  }
+
+  settingsFormOk.addEventListener('click', submitForm);
+  [settingsFormUrl, settingsFormTitle].forEach((el) => {
+    el.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitForm();
+      }
+    });
   });
 
   function buildTile(entry) {
@@ -305,7 +513,7 @@
     edit.textContent = '编辑';
     edit.addEventListener('click', () => {
       hideContextMenu();
-      openModal(entry);
+      openSettings(entry);
     });
     contextMenu.appendChild(edit);
 
@@ -345,83 +553,14 @@
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       hideContextMenu();
-      if (!modalMask.hidden) {
-        closeModal();
+      if (formEntry !== undefined) {
+        closeForm();
         return;
       }
       closeSettings();
     }
   });
   window.addEventListener('blur', hideContextMenu);
-
-  // ---------- 添加/编辑弹窗 ----------
-
-  let modalEntry = null;
-
-  function openModal(entry) {
-    modalEntry = entry || null;
-    modalHeading.textContent = modalEntry ? '编辑快捷方式' : '添加快捷方式';
-    modalHeading.parentElement.setAttribute(
-      'aria-label',
-      modalEntry ? '编辑快捷方式' : '添加快捷方式'
-    );
-    modalOk.textContent = modalEntry ? '保存' : '添加';
-    modalUrl.value = modalEntry ? modalEntry.url : '';
-    modalTitle.value = modalEntry ? modalEntry.title : '';
-    modalMask.hidden = false;
-    modalUrl.focus();
-  }
-
-  function closeModal() {
-    modalMask.hidden = true;
-    modalEntry = null;
-  }
-
-  modalCancel.addEventListener('click', closeModal);
-  modalMask.addEventListener('mousedown', (event) => {
-    if (event.target === modalMask) closeModal();
-  });
-
-  async function submitModal() {
-    const rawUrl = modalUrl.value.trim();
-    if (!rawUrl) return;
-    const url = normalizeUrl(rawUrl);
-    try {
-      new URL(url);
-    } catch (_) {
-      modalUrl.focus();
-      return;
-    }
-    const title = modalTitle.value.trim() || hostOf(url);
-    const shortcuts = await loadShortcuts();
-    if (modalEntry) {
-      const index = shortcuts.findIndex((s) => s.url === modalEntry.url);
-      if (index >= 0) {
-        shortcuts[index] = { title, url };
-      } else {
-        shortcuts.push({ title, url });
-      }
-      await saveShortcuts(shortcuts.filter((s, i) => i === index || s.url !== url));
-    } else {
-      await saveShortcuts([
-        ...shortcuts.filter((s) => s.url !== url),
-        { title, url }
-      ]);
-    }
-    closeModal();
-    renderGrid();
-    renderSettingsList();
-  }
-
-  modalOk.addEventListener('click', submitModal);
-  [modalUrl, modalTitle].forEach((el) => {
-    el.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        submitModal();
-      }
-    });
-  });
 
   renderGrid();
   input.focus();

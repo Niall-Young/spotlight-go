@@ -9,6 +9,8 @@ const STATS_KEY = 'selectionStats';
 const STATS_MAX_QUERIES = 80;
 const STATS_MAX_URLS_PER_QUERY = 12;
 const STATS_TTL_MS = 45 * 24 * 60 * 60 * 1000;
+const SOURCES_KEY = 'searchSources';
+const DEFAULT_SOURCES = { bookmark: true, history: true };
 
 const Rank = self.SpotlightRank;
 
@@ -101,6 +103,24 @@ async function consumeSuggestions(query) {
 
 // ---------- 本地搜索（打分 + 去重） ----------
 
+// 搜索来源开关（设置弹窗可关书签/历史）；缓存结果，storage 变更即失效
+let searchSourcesCache = null;
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes[SOURCES_KEY]) searchSourcesCache = null;
+});
+
+async function loadSearchSources() {
+  if (searchSourcesCache) return searchSourcesCache;
+  const data = await chrome.storage.local.get(SOURCES_KEY);
+  const stored = data[SOURCES_KEY];
+  searchSourcesCache = {
+    ...DEFAULT_SOURCES,
+    ...(stored && typeof stored === 'object' ? stored : {})
+  };
+  return searchSourcesCache;
+}
+
 async function localSearch(query) {
   const q = query.trim();
   if (!q) return { groups: { tab: [], bookmark: [], history: [] } };
@@ -108,10 +128,11 @@ async function localSearch(query) {
   scheduleSuggestionPrefetch(q);
 
   const stats = await loadSelectionStats();
+  const sources = await loadSearchSources();
   const [tab, bookmark, history] = await Promise.all([
     searchTabs(q, stats),
-    searchBookmarks(q, stats),
-    searchHistory(q, stats)
+    sources.bookmark ? searchBookmarks(q, stats) : [],
+    sources.history ? searchHistory(q, stats) : []
   ]);
 
   // 跨组去重：tab > bookmark > history

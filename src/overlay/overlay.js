@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+  const CUSTOM_SHORTCUT_KEY = 'customShortcut';
+
   let host = null;
   let shadow = null;
   let input = null;
@@ -67,8 +69,8 @@
 
   // 等待 show-overlay 消息存在空窗（service worker 冷启动可达秒级），
   // 空窗内敲下的字符会落进宿主页面当前聚焦的输入框。故在页面内识别到
-  // 快捷键 keydown 时同步打开浮层，不等消息；快捷键绑定向后台查询
-  // （chrome.commands.getAll），用户改绑后依然生效，查询失败回退默认绑定。
+  // 快捷键 keydown 时同步打开浮层，不等消息；绑定优先级：设置弹窗保存的
+  // 自定义快捷键 > chrome.commands 当前绑定 > manifest 默认键。
   function defaultTrigger() {
     const mac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
     return mac
@@ -103,6 +105,23 @@
   }
 
   function loadTrigger() {
+    // 设置弹窗里捕获的自定义快捷键优先；未设置时跟随 chrome.commands 绑定
+    try {
+      chrome.storage.local.get(CUSTOM_SHORTCUT_KEY, (data) => {
+        if (chrome.runtime.lastError) return;
+        const parsed = parseShortcut(data[CUSTOM_SHORTCUT_KEY]);
+        if (parsed) {
+          trigger = parsed;
+          return;
+        }
+        loadCommandTrigger();
+      });
+    } catch (_) {
+      // 扩展上下文失效（如扩展刚重载），保留默认绑定
+    }
+  }
+
+  function loadCommandTrigger() {
     try {
       chrome.runtime.sendMessage({ type: 'get-commands' }, (response) => {
         if (chrome.runtime.lastError) return;
@@ -113,6 +132,17 @@
     } catch (_) {
       // 扩展上下文失效（如扩展刚重载），保留默认绑定
     }
+  }
+
+  // 设置弹窗保存自定义快捷键后，已打开页面无需刷新即生效
+  try {
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area !== 'local' || !(CUSTOM_SHORTCUT_KEY in changes)) return;
+      trigger = null;
+      loadTrigger();
+    });
+  } catch (_) {
+    /* 忽略：上下文失效 */
   }
 
   function matchesTrigger(event) {
