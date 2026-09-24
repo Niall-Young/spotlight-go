@@ -30,6 +30,7 @@
     --sg-divider: rgba(255, 255, 255, 0.08);
 
     --nt-glass-bg: rgba(30, 30, 32, 0.55);
+    --nt-popover-bg: rgba(26, 26, 28, 0.94);
     --nt-glass-border: rgba(255, 255, 255, 0.09);
     --nt-glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.25);
     --nt-glass-shadow-focus: 0 20px 60px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.32);
@@ -225,7 +226,7 @@ body::after {
   max-height: 340px;
   padding: 6px 0 8px;
   border-radius: 18px;
-  background: var(--nt-glass-bg);
+  background: var(--nt-popover-bg);
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
   border: 1px solid var(--nt-glass-border);
