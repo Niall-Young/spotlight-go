@@ -248,12 +248,15 @@
 
     panel = window.SpotlightResults.create(results, { onSelect: selectItem });
 
-    // 阻止按键泄漏到宿主页面
-    host.addEventListener('keydown', (event) => {
-      if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'].includes(event.key)) {
-        event.stopPropagation();
-      }
-    });
+    // 阻止按键泄漏到宿主页面：聊天类页面常挂全局 keydown 监听，
+    // 一旦放 Printable 键冒泡出去，页面会把焦点抢回自己的输入框
+    const swallowKeys = (event) => event.stopPropagation();
+    host.addEventListener('keydown', swallowKeys);
+    host.addEventListener('keyup', swallowKeys);
+    host.addEventListener('keypress', swallowKeys);
+
+    // 兜底：页面若用 capture 监听抢走焦点，立刻抢回来
+    document.addEventListener('focusin', keepFocus, true);
 
     updateFooter('');
     // 同步聚焦并灌入缓冲字符，不再等下一帧（等待期间按键会丢给宿主页面）
@@ -261,9 +264,17 @@
     flushKeyBuffer();
   }
 
+  function keepFocus() {
+    // 浮层为 closed shadow，浮层内聚焦时 document.activeElement 为 host
+    if (host && input && document.activeElement !== host) {
+      input.focus();
+    }
+  }
+
   function closeOverlay() {
     searchSeq++;
     stopKeyBuffer();
+    document.removeEventListener('focusin', keepFocus, true);
     if (host) {
       host.remove();
       host = null;
