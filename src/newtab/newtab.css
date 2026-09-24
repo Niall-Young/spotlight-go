@@ -437,11 +437,10 @@ body::after {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.12s ease, color 0.12s ease, background 0.12s ease;
+  transition: color 0.12s ease, background 0.12s ease;
 }
 
 .nt-settings-fab:hover {
-  transform: translateY(-2px);
   color: var(--sg-text);
 }
 
