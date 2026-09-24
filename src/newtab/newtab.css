@@ -120,13 +120,14 @@ body::after {
 
 .nt-search-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 16px 18px;
 }
 
 .nt-search-icon {
   flex: 0 0 auto;
+  margin-top: 3px;
   color: var(--sg-text-secondary);
 }
 
