@@ -266,12 +266,13 @@ body::after {
   transition: none;
 }
 
+/* flex 换行 + 居中：不满一行的瓦片也居中，而不是靠左（grid auto-fill 会铺满列轨道） */
 .nt-grid-page {
   flex: 0 0 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 96px);
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  align-content: start;
+  align-content: flex-start;
   gap: 16px;
 }
 
@@ -320,6 +321,8 @@ body::after {
 }
 
 .nt-tile {
+  width: 96px;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -805,8 +808,7 @@ body::after {
 }
 
 @media (max-width: 480px) {
-  .nt-grid {
-    grid-template-columns: repeat(auto-fill, 84px);
+  .nt-grid-page {
     gap: 12px;
   }
 }
