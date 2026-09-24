@@ -8,23 +8,71 @@
   let searchSeq = 0;
   let composing = false;
   let cssPromise = null;
+  let pendingKeys = null;
 
   function loadCss() {
     if (!cssPromise) {
       cssPromise = Promise.all([
         fetch(chrome.runtime.getURL('src/shared/results-panel.css')).then((r) => r.text()),
         fetch(chrome.runtime.getURL('src/overlay/overlay.css')).then((r) => r.text())
-      ]).then((parts) => parts.join('\n'));
+      ])
+        .then((parts) => parts.join('\n'))
+        .catch((err) => {
+          cssPromise = null;
+          throw err;
+        });
     }
     return cssPromise;
+  }
+
+  // 页面加载后即预取 CSS，避免首次唤起时等待 fetch
+  loadCss().catch(() => {});
+
+  // 从收到唤起消息到 input 聚焦之间，缓冲用户已经敲下的字符，
+  // 否则按键会落到宿主页面（首字母丢失的根因之一）
+  function startKeyBuffer() {
+    if (pendingKeys !== null) return;
+    pendingKeys = '';
+    window.addEventListener('keydown', bufferKeydown, true);
+  }
+
+  function stopKeyBuffer() {
+    if (pendingKeys === null) return;
+    pendingKeys = null;
+    window.removeEventListener('keydown', bufferKeydown, true);
+  }
+
+  function bufferKeydown(event) {
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.key === 'Backspace') {
+      pendingKeys = pendingKeys.slice(0, -1);
+    } else if (event.key.length === 1) {
+      pendingKeys += event.key;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function flushKeyBuffer() {
+    if (pendingKeys === null) return;
+    const text = pendingKeys;
+    stopKeyBuffer();
+    if (text && input) {
+      input.value = text;
+      onInput();
+    }
   }
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type === 'show-overlay') {
       if (host) {
         input?.focus();
-        input?.select();
+        // 仅在输入框未聚焦时全选，避免用户正在输入时被迟到的消息打断
+        if (shadow && shadow.activeElement !== input) input?.select();
       } else {
+        startKeyBuffer();
         openOverlay();
       }
     }
@@ -120,8 +168,18 @@
   }
 
   async function openOverlay() {
-    const css = await loadCss();
-    if (host) return;
+    let css;
+    try {
+      css = await loadCss();
+    } catch (_) {
+      stopKeyBuffer();
+      return;
+    }
+    if (host) {
+      input?.focus();
+      flushKeyBuffer();
+      return;
+    }
 
     host = document.createElement('div');
     host.id = 'sg-overlay-host';
@@ -198,11 +256,14 @@
     });
 
     updateFooter('');
-    requestAnimationFrame(() => input.focus());
+    // 同步聚焦并灌入缓冲字符，不再等下一帧（等待期间按键会丢给宿主页面）
+    input.focus();
+    flushKeyBuffer();
   }
 
   function closeOverlay() {
     searchSeq++;
+    stopKeyBuffer();
     if (host) {
       host.remove();
       host = null;
