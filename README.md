@@ -61,6 +61,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
   * Dynamically adjusted by visit counts, recency, and historical user selections.
   * Local results render with zero latency while web suggestions arrive asynchronously.
 * **Input-Safe Trigger**: Preserves your keystrokes immediately upon invocation—no dropped characters even when typing quickly.
+* **Non-Disruptive Opening**: Results and web searches opened from the overlay always spawn a new tab—your current page is never navigated away (existing tabs are still switched to directly).
 * **Privileged Page Fallback**: When pressed on non-injectable internal pages (such as `chrome://`), automatically falls back to opening the new tab page and focusing the search bar.
 
 ### 🪟 Minimalist Frosted-Glass New Tab

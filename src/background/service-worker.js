@@ -309,7 +309,7 @@ async function openItem(item, query) {
     return { ok: true };
   }
   if (item.group === 'suggestion' || item.type === 'direct-search') {
-    await chrome.search.query({ text: item.query || item.title || '' });
+    await chrome.search.query({ text: item.query || item.title || '', disposition: 'NEW_TAB' });
     return { ok: true };
   }
   if (item.url) {
