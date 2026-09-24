@@ -45,9 +45,11 @@
     "tabs",
     "topSites",
     "search",
-    "favicon"
+    "favicon",
+    "scripting"
   ],
   "host_permissions": [
+    "<all_urls>",
     "https://www.google.com/complete/*",
     "https://*.bing.com/osjson.aspx*"
   ],

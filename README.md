@@ -44,4 +44,5 @@ src/newtab/                新标签页
 | `bookmarks` / `history` / `tabs` / `topSites` | 聚合搜索与快捷方式 |
 | `search` | 使用浏览器默认搜索引擎执行搜索 |
 | `favicon` | 结果与瓦片的站点图标 |
+| `scripting`、`<all_urls>` | 按快捷键时向未注入浮层的页面（如扩展重载前已打开的标签页）按需补注入浮层脚本 |
 | `https://www.google.com/complete/*`、`https://*.bing.com/osjson.aspx*` | 网页搜索建议接口 |

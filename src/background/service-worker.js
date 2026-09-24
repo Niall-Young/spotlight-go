@@ -7,17 +7,33 @@ chrome.commands.onCommand.addListener((command) => {
 
 chrome.action.onClicked.addListener(() => showOverlay());
 
+const OVERLAY_SCRIPTS = ['src/shared/results-panel.js', 'src/overlay/overlay.js'];
+
 async function showOverlay() {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
   if (tab?.id != null) {
+    if (await tryShowOverlay(tab.id)) return;
+    // content script 可能未注入（扩展重载前已打开的页面），按需补注入后重试
     try {
-      await chrome.tabs.sendMessage(tab.id, { type: 'show-overlay' });
-      return;
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: OVERLAY_SCRIPTS
+      });
+      if (await tryShowOverlay(tab.id)) return;
     } catch (_) {
       // 页面无法注入 content script（chrome:// 等），回退到打开新标签页
     }
   }
   chrome.tabs.create({});
+}
+
+async function tryShowOverlay(tabId) {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'show-overlay' });
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
