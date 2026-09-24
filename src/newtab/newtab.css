@@ -247,18 +247,35 @@ body::after {
   width: min(760px, 100%);
 }
 
-.nt-grid {
+/* 宫格分页做成横向滑动轨道：翻页即平移，轨道高度恒为最高一页，切换时布局不抖动 */
+.nt-grid-viewport {
+  width: 100%;
+  overflow: hidden;
+}
+
+.nt-grid-track {
+  display: flex;
+  width: 100%;
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.nt-grid-track.nt-grid-track-instant {
+  transition: none;
+}
+
+.nt-grid-page {
+  flex: 0 0 100%;
   display: grid;
   grid-template-columns: repeat(auto-fill, 96px);
   justify-content: center;
+  align-content: start;
   gap: 16px;
-  width: 100%;
 }
 
-/* 有多页时固定两行高度：末页不满两行时分页按钮不上下跳动 */
-.nt-grid.nt-grid-paged {
-  min-height: 188px;
-  align-content: start;
+@media (prefers-reduced-motion: reduce) {
+  .nt-grid-track {
+    transition: none;
+  }
 }
 
 /* 网格分页：居中左右箭头 */

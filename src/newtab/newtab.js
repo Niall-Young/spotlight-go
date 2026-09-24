@@ -9,6 +9,7 @@
   const input = document.getElementById('nt-input');
   const resultsEl = document.getElementById('nt-results');
   const grid = document.getElementById('nt-grid');
+  const gridTrack = document.getElementById('nt-grid-track');
   const gridPager = document.getElementById('nt-grid-pager');
   const gridPrev = document.getElementById('nt-grid-prev');
   const gridNext = document.getElementById('nt-grid-next');
@@ -194,19 +195,38 @@
     const pageSize = gridPageSize();
     const pages = Math.max(1, Math.ceil(gridEntries.length / pageSize));
     gridPage = Math.min(Math.max(gridPage, 0), pages - 1);
-    grid.textContent = '';
-    const start = gridPage * pageSize;
-    gridEntries.slice(start, start + pageSize).forEach((entry, i) => {
-      const tile = buildTile({
-        title: entry.title || hostOf(entry.url),
-        url: entry.url
+    gridTrack.textContent = '';
+    for (let p = 0; p < pages; p++) {
+      const pageEl = document.createElement('div');
+      pageEl.className = 'nt-grid-page';
+      const start = p * pageSize;
+      gridEntries.slice(start, start + pageSize).forEach((entry, i) => {
+        const tile = buildTile({
+          title: entry.title || hostOf(entry.url),
+          url: entry.url
+        });
+        tile.dataset.index = String(start + i);
+        setupTileDrag(tile);
+        pageEl.appendChild(tile);
       });
-      tile.dataset.index = String(start + i);
-      setupTileDrag(tile);
-      grid.appendChild(tile);
-    });
-    grid.classList.toggle('nt-grid-paged', pages > 1);
+      gridTrack.appendChild(pageEl);
+    }
+    // 重建（加载/拖拽/resize）时不播滑动动画，直接落位
+    gridTrack.classList.add('nt-grid-track-instant');
+    gridTrack.style.transform = 'translateX(' + -gridPage * 100 + '%)';
+    void gridTrack.offsetWidth;
+    gridTrack.classList.remove('nt-grid-track-instant');
     gridPager.hidden = pages <= 1;
+    gridPrev.disabled = gridPage === 0;
+    gridNext.disabled = gridPage >= pages - 1;
+  }
+
+  // 翻页只动轨道位移，不重建瓦片，避免图标重复加载闪烁
+  function goToGridPage(page) {
+    const pageSize = gridPageSize();
+    const pages = Math.max(1, Math.ceil(gridEntries.length / pageSize));
+    gridPage = Math.min(Math.max(page, 0), pages - 1);
+    gridTrack.style.transform = 'translateX(' + -gridPage * 100 + '%)';
     gridPrev.disabled = gridPage === 0;
     gridNext.disabled = gridPage >= pages - 1;
   }
@@ -239,18 +259,22 @@
     event.dataTransfer.dropEffect = 'move';
     const target = event.target.closest('.nt-tile');
     if (!target || target === dragTile) return;
+    const page = target.parentElement;
+    if (page !== dragTile.parentElement) return;
     const rect = target.getBoundingClientRect();
     // 同行内按水平中点、跨行按垂直中点判断插到目标前还是后
     const after =
       event.clientY > rect.top + rect.height / 2 ||
       (event.clientY > rect.top && event.clientX > rect.left + rect.width / 2);
-    grid.insertBefore(dragTile, after ? target.nextSibling : target);
+    page.insertBefore(dragTile, after ? target.nextSibling : target);
   });
 
   grid.addEventListener('drop', (event) => {
     if (!dragTile) return;
     event.preventDefault();
-    const order = Array.from(grid.querySelectorAll('.nt-tile'))
+    const page = dragTile.parentElement;
+    if (!page) return;
+    const order = Array.from(page.querySelectorAll('.nt-tile'))
       .map((tile) => Number(tile.dataset.index))
       .filter((i) => Number.isInteger(i));
     if (order.length === 0) return;
@@ -260,12 +284,10 @@
   });
 
   gridPrev.addEventListener('click', () => {
-    gridPage--;
-    renderGridPage();
+    goToGridPage(gridPage - 1);
   });
   gridNext.addEventListener('click', () => {
-    gridPage++;
-    renderGridPage();
+    goToGridPage(gridPage + 1);
   });
 
   // 窗口变宽/窄会改变每行列数，需重算分页
