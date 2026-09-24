@@ -10,6 +10,7 @@
   --nt-glass-bg: rgba(255, 255, 255, 0.55);
   --nt-glass-border: rgba(255, 255, 255, 0.65);
   --nt-glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.05);
+  --nt-glass-shadow-focus: 0 20px 60px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(0, 0, 0, 0.08);
   --nt-tile-bg: rgba(255, 255, 255, 0.45);
   --nt-tile-border: rgba(255, 255, 255, 0.55);
   --nt-tile-icon-bg: rgba(255, 255, 255, 0.7);
@@ -30,6 +31,7 @@
     --nt-glass-bg: rgba(30, 30, 32, 0.55);
     --nt-glass-border: rgba(255, 255, 255, 0.09);
     --nt-glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.25);
+    --nt-glass-shadow-focus: 0 20px 60px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.32);
     --nt-tile-bg: rgba(255, 255, 255, 0.06);
     --nt-tile-border: rgba(255, 255, 255, 0.08);
     --nt-tile-icon-bg: rgba(255, 255, 255, 0.1);
@@ -116,6 +118,11 @@ body::after {
   border: 1px solid var(--nt-glass-border);
   box-shadow: var(--nt-glass-shadow);
   overflow: hidden;
+  transition: box-shadow 0.18s ease;
+}
+
+.nt-search-card:focus-within {
+  box-shadow: var(--nt-glass-shadow-focus);
 }
 
 .nt-search-row {
