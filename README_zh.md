@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/icon.svg" width="96" height="96" alt="Spotlight Go Logo" />
+<img src="assets/icon-128.png" width="96" height="96" alt="Spotlight Go Logo" />
 
 # Spotlight Go
 
