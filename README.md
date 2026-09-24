@@ -48,6 +48,10 @@ src/newtab/                新标签页
 | `scripting`、`<all_urls>` | 按快捷键时向未注入浮层的页面（如扩展重载前已打开的标签页）按需补注入浮层脚本 |
 | `https://www.google.com/complete/*`、`https://*.bing.com/osjson.aspx*` | 网页搜索建议接口 |
 
+## 隐私政策
+
+本扩展不收集任何用户数据，详见 [隐私政策](PRIVACY.md)。
+
 ## 开源协议
 
 本项目采用 [MIT License](LICENSE) 开源。
