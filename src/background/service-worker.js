@@ -48,6 +48,10 @@ async function tryShowOverlay(tabId) {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type === 'get-commands') {
+    chrome.commands.getAll().then(sendResponse);
+    return true;
+  }
   if (message?.type === 'search') {
     localSearch(message.query || '').then(sendResponse);
     return true;

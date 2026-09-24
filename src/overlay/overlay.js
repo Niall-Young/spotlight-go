@@ -9,8 +9,7 @@
   let composing = false;
   let cssPromise = null;
   let pendingKeys = null;
-  let bufferTimer = 0;
-  const TRIGGER_FALLBACK_MS = 1000;
+  let trigger = null;
 
   function loadCss() {
     if (!cssPromise) {
@@ -41,8 +40,6 @@
   function stopKeyBuffer() {
     if (pendingKeys === null) return;
     pendingKeys = null;
-    clearTimeout(bufferTimer);
-    bufferTimer = 0;
     window.removeEventListener('keydown', bufferKeydown, true);
   }
 
@@ -69,29 +66,71 @@
     }
   }
 
-  // 快捷键 keydown 到 content script 收到唤起消息之间存在空窗
-  // （service worker 冷启动可达数百毫秒），期间敲下的字符会落进
-  // 宿主页面当前聚焦的输入框，即“首字母丢失”。故在页面内识别到
-  // 快捷键按下时立即开始缓冲，不等消息。
-  function matchesShortcut(event) {
-    if (event.metaKey) return false;
-    if (event.altKey && !event.ctrlKey && !event.shiftKey) return event.code === 'Space';
-    if (event.ctrlKey && event.shiftKey && !event.altKey) return event.code === 'KeyK';
-    return false;
+  // 等待 show-overlay 消息存在空窗（service worker 冷启动可达秒级），
+  // 空窗内敲下的字符会落进宿主页面当前聚焦的输入框。故在页面内识别到
+  // 快捷键 keydown 时同步打开浮层，不等消息；快捷键绑定向后台查询
+  // （chrome.commands.getAll），用户改绑后依然生效，查询失败回退默认绑定。
+  function defaultTrigger() {
+    const mac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+    return mac
+      ? { alt: true, ctrl: false, shift: false, meta: false, code: 'Space' }
+      : { alt: false, ctrl: true, shift: true, meta: false, code: 'KeyK' };
+  }
+
+  function keyNameToCode(name) {
+    if (/^[A-Z]$/.test(name)) return `Key${name}`;
+    if (/^[0-9]$/.test(name)) return `Digit${name}`;
+    return name;
+  }
+
+  function parseShortcut(shortcut) {
+    if (!shortcut) return null;
+    const parts = shortcut.split('+');
+    const parsed = {
+      alt: false,
+      ctrl: false,
+      shift: false,
+      meta: false,
+      code: keyNameToCode(parts.pop())
+    };
+    for (const part of parts) {
+      if (part === 'Alt') parsed.alt = true;
+      else if (part === 'Ctrl' || part === 'MacCtrl') parsed.ctrl = true;
+      else if (part === 'Shift') parsed.shift = true;
+      else if (part === 'Command') parsed.meta = true;
+      else return null;
+    }
+    return parsed;
+  }
+
+  function loadTrigger() {
+    try {
+      chrome.runtime.sendMessage({ type: 'get-commands' }, (response) => {
+        if (chrome.runtime.lastError) return;
+        const entry = (response || []).find((c) => c.name === 'show-search');
+        const parsed = parseShortcut(entry?.shortcut);
+        if (parsed) trigger = parsed;
+      });
+    } catch (_) {
+      // 扩展上下文失效（如扩展刚重载），保留默认绑定
+    }
+  }
+
+  function matchesTrigger(event) {
+    const t = trigger || (trigger = defaultTrigger());
+    return (
+      event.code === t.code &&
+      event.altKey === t.alt &&
+      event.ctrlKey === t.ctrl &&
+      event.shiftKey === t.shift &&
+      event.metaKey === t.meta
+    );
   }
 
   function watchTrigger(event) {
     if (host || pendingKeys !== null) return;
-    if (!matchesShortcut(event)) return;
-    startKeyBuffer();
-    // 快捷键被改绑或唤起失败时不能一直吞键：超时后把缓冲字符
-    // 还原回当时聚焦的输入框，当作没有拦截过
-    bufferTimer = setTimeout(() => {
-      if (pendingKeys === null) return;
-      const text = pendingKeys;
-      stopKeyBuffer();
-      restoreBufferedText(text);
-    }, TRIGGER_FALLBACK_MS);
+    if (!matchesTrigger(event)) return;
+    openOverlay();
   }
 
   function restoreBufferedText(text) {
@@ -109,6 +148,7 @@
   }
 
   window.addEventListener('keydown', watchTrigger, true);
+  loadTrigger();
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type === 'show-overlay') {
