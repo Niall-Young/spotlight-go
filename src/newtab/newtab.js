@@ -13,7 +13,12 @@
   const modalTitle = document.getElementById('nt-modal-title');
   const modalOk = document.getElementById('nt-modal-ok');
   const modalCancel = document.getElementById('nt-modal-cancel');
-  const editFab = document.getElementById('nt-edit-fab');
+  const settingsFab = document.getElementById('nt-settings-fab');
+  const settingsMask = document.getElementById('nt-settings-mask');
+  const settingsEditBtn = document.getElementById('nt-settings-edit');
+  const settingsShortcut = document.getElementById('nt-settings-shortcut');
+  const settingsShortcutEdit = document.getElementById('nt-settings-shortcut-edit');
+  const settingsClose = document.getElementById('nt-settings-close');
 
   let searchSeq = 0;
   let composing = false;
@@ -168,13 +173,51 @@
 
   function setEditing(value) {
     editing = value;
-    editFab.classList.toggle('is-active', editing);
-    editFab.setAttribute('aria-pressed', String(editing));
-    editFab.title = editing ? '完成编辑' : '编辑快捷方式';
     renderGrid();
   }
 
-  editFab.addEventListener('click', () => setEditing(!editing));
+  // ---------- 设置弹窗 ----------
+
+  const DEFAULT_SHORTCUT_LABEL = /mac/i.test(navigator.platform || '')
+    ? '⌥ Space'
+    : 'Ctrl+Shift+K';
+
+  function refreshShortcutLabel() {
+    // chrome.commands 快捷键由浏览器统一管理，此处只读展示；未自定义时显示 manifest 默认键
+    settingsShortcut.textContent = DEFAULT_SHORTCUT_LABEL;
+    try {
+      chrome.commands.getAll((commands) => {
+        if (chrome.runtime.lastError) return;
+        const cmd = (commands || []).find((c) => c.name === 'show-search');
+        if (cmd && cmd.shortcut) settingsShortcut.textContent = cmd.shortcut;
+      });
+    } catch (_) {
+      /* 忽略：保持默认展示 */
+    }
+  }
+
+  function openSettings() {
+    settingsEditBtn.textContent = editing ? '完成编辑' : '编辑';
+    refreshShortcutLabel();
+    settingsMask.hidden = false;
+  }
+
+  function closeSettings() {
+    settingsMask.hidden = true;
+  }
+
+  settingsFab.addEventListener('click', openSettings);
+  settingsClose.addEventListener('click', closeSettings);
+  settingsMask.addEventListener('mousedown', (event) => {
+    if (event.target === settingsMask) closeSettings();
+  });
+  settingsEditBtn.addEventListener('click', () => {
+    setEditing(!editing);
+    closeSettings();
+  });
+  settingsShortcutEdit.addEventListener('click', () => {
+    chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
+  });
 
   function buildTile(entry) {
     const tile = document.createElement('div');
@@ -271,6 +314,7 @@
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       hideContextMenu();
+      closeSettings();
       if (editing) setEditing(false);
     }
   });
