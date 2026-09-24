@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "spotlight-go",
+  "description": "聚焦搜索与新标签页：快捷键唤起 Spotlight 风格搜索浮层，聚合网页建议、标签页、书签与历史；并提供黑白灰磨砂玻璃质感的简洁首页。",
+  "version": "0.1.0",
+  "icons": {
+    "16": "assets/icon-16.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "action": {
+    "default_title": "spotlight-go 聚焦搜索",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "48": "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "commands": {
+    "show-search": {
+      "description": "唤起聚焦搜索",
+      "suggested_key": {
+        "default": "Ctrl+Shift+K",
+        "mac": "Command+Shift+K"
+      }
+    }
+  },
+  "chrome_url_overrides": {
+    "newtab": "src/newtab/newtab.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/shared/results-panel.js", "src/overlay/overlay.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "storage",
+    "bookmarks",
+    "history",
+    "tabs",
+    "topSites",
+    "search",
+    "favicon"
+  ],
+  "host_permissions": [
+    "https://www.google.com/complete/*",
+    "https://*.bing.com/osjson.aspx*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/overlay/overlay.css", "src/shared/results-panel.css", "_favicon/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

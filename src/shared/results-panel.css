@@ -1,0 +1,92 @@
+/* 共享分组结果面板样式（overlay 与 newtab 复用）
+   依赖宿主定义的 CSS 变量：
+   --sg-text, --sg-text-secondary, --sg-selected-bg, --sg-mark-bg, --sg-divider */
+
+.sg-results {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.sg-group + .sg-group {
+  border-top: 1px solid var(--sg-divider, rgba(0, 0, 0, 0.08));
+}
+
+.sg-group-title {
+  padding: 8px 14px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--sg-text-secondary, rgba(0, 0, 0, 0.45));
+  user-select: none;
+}
+
+.sg-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  cursor: pointer;
+  border-radius: 8px;
+  margin: 0 6px;
+}
+
+.sg-item.sg-selected {
+  background: var(--sg-selected-bg, rgba(0, 0, 0, 0.06));
+}
+
+.sg-item-icon {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sg-text-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.sg-item-icon img {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.sg-item-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sg-item-title {
+  font-size: 13.5px;
+  color: var(--sg-text, #1c1c1e);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sg-item-title mark {
+  background: var(--sg-mark-bg, rgba(0, 0, 0, 0.08));
+  color: inherit;
+  font-weight: 600;
+  border-radius: 2px;
+}
+
+.sg-item-url {
+  font-size: 11.5px;
+  color: var(--sg-text-secondary, rgba(0, 0, 0, 0.45));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sg-item-hint {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--sg-text-secondary, rgba(0, 0, 0, 0.35));
+  opacity: 0;
+  user-select: none;
+}
+
+.sg-item.sg-selected .sg-item-hint {
+  opacity: 1;
+}
