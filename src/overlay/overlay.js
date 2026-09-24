@@ -126,11 +126,47 @@
     );
   }
 
-  function watchTrigger(event) {
-    if (host || pendingKeys !== null) return;
-    if (!matchesTrigger(event)) return;
-    startKeyBuffer();
-    openOverlay();
+  function isNavKey(event) {
+    return event.key === 'Escape' || event.key === 'Tab' || event.key === 'Enter';
+  }
+
+  // 统一的 window 捕获层按键处理。内容脚本 document_start 注册，捕获阶段
+  // 先于宿主页面任何监听触发，故能抢在页面前拦下按键：
+  // - 浮层未开时识别唤起快捷键；
+  // - 唤起过渡期缓冲已敲字符；
+  // - 浮层打开后对整个生命周期持续拦截，杜绝聊天类页面的全局 keydown
+  //   监听在事件到达输入框前抢走首字符（首字母被吞的根因）。
+  function captureKeyDown(event) {
+    if (!event.isTrusted) return;
+
+    if (!host) {
+      if (pendingKeys !== null) {
+        bufferKeydown(event);
+        return;
+      }
+      if (matchesTrigger(event)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        startKeyBuffer();
+        openOverlay();
+      }
+      return;
+    }
+
+    if (composing || event.isComposing) {
+      event.stopImmediatePropagation();
+      return;
+    }
+    if (isNavKey(event)) handleKeydown(event);
+    // 只阻断向宿主页面的传播，不 preventDefault 可打印键，
+    // 让浏览器默认行为把字符写进已聚焦的输入框。
+    event.stopImmediatePropagation();
+  }
+
+  function captureKeyPress(event) {
+    if (!event.isTrusted) return;
+    if (!host && pendingKeys === null) return;
+    event.stopImmediatePropagation();
   }
 
   function restoreBufferedText(text) {
@@ -147,9 +183,9 @@
     }
   }
 
-  window.addEventListener('keydown', watchTrigger, true);
-  // 在页面脚本注册按键监听前占位；等待浮层构建时拦下首字符。
-  window.addEventListener('keydown', bufferKeydown, true);
+  // 在页面脚本注册按键监听前占位；唤起、过渡、打开三态统一在此拦截。
+  window.addEventListener('keydown', captureKeyDown, true);
+  window.addEventListener('keypress', captureKeyPress, true);
   loadTrigger();
 
   chrome.runtime.onMessage.addListener((message) => {
@@ -298,7 +334,6 @@
     input.spellcheck = false;
     input.autocomplete = 'off';
     input.addEventListener('input', onInput);
-    input.addEventListener('keydown', handleKeydown);
     input.addEventListener('compositionstart', () => {
       composing = true;
     });
@@ -331,12 +366,8 @@
 
     panel = window.SpotlightResults.create(results, { onSelect: selectItem });
 
-    // 阻止按键泄漏到宿主页面：聊天类页面常挂全局 keydown 监听，
-    // 一旦放 Printable 键冒泡出去，页面会把焦点抢回自己的输入框
-    const swallowKeys = (event) => event.stopPropagation();
-    host.addEventListener('keydown', swallowKeys);
-    host.addEventListener('keyup', swallowKeys);
-    host.addEventListener('keypress', swallowKeys);
+    // 按键拦截已上移到 window 捕获层（captureKeyDown），先于宿主页面监听
+    // 触发并掐断传播，无需再在 host 上做冒泡拦截。
 
     // 兜底：页面若用 capture 监听抢走焦点，立刻抢回来
     document.addEventListener('focusin', keepFocus, true);
