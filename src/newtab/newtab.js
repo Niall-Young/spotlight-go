@@ -12,10 +12,12 @@
   const modalTitle = document.getElementById('nt-modal-title');
   const modalOk = document.getElementById('nt-modal-ok');
   const modalCancel = document.getElementById('nt-modal-cancel');
+  const editFab = document.getElementById('nt-edit-fab');
 
   let searchSeq = 0;
   let debounceTimer = null;
   let composing = false;
+  let editing = false;
 
   const panel = window.SpotlightResults.create(resultsEl, {
     onSelect: (item) => openItem(item)
@@ -149,8 +151,18 @@
         url: entry.url
       }));
     }
-    grid.appendChild(buildAddTile());
+    if (editing) grid.appendChild(buildAddTile());
   }
+
+  function setEditing(value) {
+    editing = value;
+    editFab.classList.toggle('is-active', editing);
+    editFab.setAttribute('aria-pressed', String(editing));
+    editFab.title = editing ? '完成编辑' : '编辑快捷方式';
+    renderGrid();
+  }
+
+  editFab.addEventListener('click', () => setEditing(!editing));
 
   function buildTile(entry) {
     const tile = document.createElement('div');
@@ -235,7 +247,10 @@
 
   document.addEventListener('click', () => hideContextMenu());
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') hideContextMenu();
+    if (event.key === 'Escape') {
+      hideContextMenu();
+      if (editing) setEditing(false);
+    }
   });
   window.addEventListener('blur', hideContextMenu);
 
