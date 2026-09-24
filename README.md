@@ -5,10 +5,11 @@ Chrome 扩展（Manifest V3）：Spotlight 风格的聚焦搜索 + 黑白灰磨�
 ## 功能
 
 - **聚焦搜索浮层**：任意页面按 `Cmd+Shift+K`（Windows/Linux：`Ctrl+Shift+K`）在当前页弹出居中搜索浮层，聚合搜索：
-  - 网页搜索建议（Google，失败时回退 Bing）
   - 打开的标签页（Enter 切换而非新开）
   - 书签
   - 历史记录（近 30 天）
+  - 网页搜索建议（Google，失败时回退 Bing），异步追加在列表尾部
+  - 本地结果即时渲染（不等网络）；各组按相关度打分排序（标题/域名精确与前缀匹配优先，结合访问次数、最近访问时间与历史选择记录），同一 URL 跨组去重（标签页 > 书签 > 历史）
   - `↑↓` 跨组导航、`Enter` 打开、`Esc` 关闭；无结果时 `Enter` 直接搜索（输入形如网址时直接跳转）
   - 在 `chrome://` 等无法注入的页面按快捷键，回退为打开新标签页并聚焦搜索框
 - **新标签页**：居中大搜索框（自动聚焦）+ 用户自配置的快捷方式宫格（自动解析站点 favicon，列数随窗口宽度自适应）
@@ -23,7 +24,7 @@ Chrome 扩展（Manifest V3）：Spotlight 风格的聚焦搜索 + 黑白灰磨�
 ```
 manifest.json
 assets/                    图标
-src/background/            service worker：快捷键命令、聚合搜索、打开结果
+src/background/            service worker：快捷键命令、聚合搜索（search-rank.js 打分）、打开结果
 src/shared/                分组结果面板（overlay 与 newtab 复用）
 src/overlay/               聚焦搜索浮层（closed Shadow DOM 隔离宿主页面样式）
 src/newtab/                新标签页
@@ -40,7 +41,7 @@ src/newtab/                新标签页
 
 | 权限 | 用途 |
 | --- | --- |
-| `storage` | 保存用户配置的快捷方式 |
+| `storage` | 保存用户配置的快捷方式与搜索选择统计（用于结果排序） |
 | `bookmarks` / `history` / `tabs` | 聚合搜索 |
 | `search` | 使用浏览器默认搜索引擎执行搜索 |
 | `favicon` | 结果与瓦片的站点图标 |

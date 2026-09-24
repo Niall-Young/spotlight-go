@@ -15,7 +15,6 @@
   const editFab = document.getElementById('nt-edit-fab');
 
   let searchSeq = 0;
-  let debounceTimer = null;
   let composing = false;
   let editing = false;
 
@@ -35,6 +34,13 @@
 
   function openItem(item) {
     if (!item) return;
+    if (item.url) {
+      chrome.runtime.sendMessage({
+        type: 'record-selection',
+        query: input.value.trim(),
+        url: item.url
+      });
+    }
     if (item.group === 'tab' && item.tabId != null) {
       chrome.tabs.update(item.tabId, { active: true });
       if (item.windowId != null) chrome.windows.update(item.windowId, { focused: true });
@@ -57,22 +63,27 @@
 
   function sendSearch(query) {
     const seq = ++searchSeq;
+    // 本地结果先行渲染；网络建议由后台预取，随后合并到列表尾部
     chrome.runtime.sendMessage({ type: 'search', query }, (response) => {
       if (chrome.runtime.lastError) return;
       if (seq !== searchSeq) return;
       panel.render(response?.groups, query);
+      chrome.runtime.sendMessage({ type: 'search-suggestions', query }, (res) => {
+        if (chrome.runtime.lastError) return;
+        if (seq !== searchSeq) return;
+        panel.mergeGroups({ suggestion: res?.groups?.suggestion || [] }, query);
+      });
     });
   }
 
   input.addEventListener('input', () => {
     const query = input.value.trim();
-    clearTimeout(debounceTimer);
     if (!query) {
       searchSeq++;
       panel.clear();
       return;
     }
-    debounceTimer = setTimeout(() => sendSearch(query), 200);
+    sendSearch(query);
   });
 
   input.addEventListener('keydown', (event) => {

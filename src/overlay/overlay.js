@@ -6,7 +6,6 @@
   let input = null;
   let panel = null;
   let searchSeq = 0;
-  let debounceTimer = null;
   let composing = false;
   let cssPromise = null;
 
@@ -33,11 +32,18 @@
 
   function sendSearch(query) {
     const seq = ++searchSeq;
+    // 本地结果先行渲染；网络建议由后台预取，随后合并到列表尾部
     chrome.runtime.sendMessage({ type: 'search', query }, (response) => {
       if (chrome.runtime.lastError) return;
       if (seq !== searchSeq || !panel) return;
       panel.render(response?.groups, query);
       updateFooter(query);
+      chrome.runtime.sendMessage({ type: 'search-suggestions', query }, (res) => {
+        if (chrome.runtime.lastError) return;
+        if (seq !== searchSeq || !panel) return;
+        panel.mergeGroups({ suggestion: res?.groups?.suggestion || [] }, query);
+        updateFooter(query);
+      });
     });
   }
 
@@ -60,7 +66,11 @@
   }
 
   function selectItem(item) {
-    chrome.runtime.sendMessage({ type: 'open', item });
+    chrome.runtime.sendMessage({
+      type: 'open',
+      item,
+      query: input ? input.value.trim() : ''
+    });
     closeOverlay();
   }
 
@@ -100,14 +110,13 @@
 
   function onInput() {
     const query = input.value.trim();
-    clearTimeout(debounceTimer);
     if (!query) {
       searchSeq++;
       panel.clear();
       updateFooter('');
       return;
     }
-    debounceTimer = setTimeout(() => sendSearch(query), 200);
+    sendSearch(query);
   }
 
   async function openOverlay() {
@@ -193,7 +202,6 @@
   }
 
   function closeOverlay() {
-    clearTimeout(debounceTimer);
     searchSeq++;
     if (host) {
       host.remove();

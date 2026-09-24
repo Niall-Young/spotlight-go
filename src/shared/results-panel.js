@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  const GROUP_ORDER = ['suggestion', 'tab', 'bookmark', 'history'];
+  const GROUP_ORDER = ['tab', 'bookmark', 'history', 'suggestion'];
   const GROUP_META = {
     suggestion: { label: '搜索建议', hint: '搜索' },
     tab: { label: '标签页', hint: '切换' },
@@ -50,6 +50,7 @@
     let items = [];
     let selectedIndex = -1;
     let currentQuery = '';
+    let lastGroups = {};
 
     function setSelected(index, scroll) {
       if (index === selectedIndex) return;
@@ -120,11 +121,28 @@
     }
 
     function render(groups, query) {
+      lastGroups = {};
+      const src = groups || {};
+      for (const group of GROUP_ORDER) {
+        if (Array.isArray(src[group])) lastGroups[group] = src[group];
+      }
+      paint(query);
+    }
+
+    function mergeGroups(partial, query) {
+      const src = partial || {};
+      for (const group of Object.keys(src)) {
+        if (Array.isArray(src[group])) lastGroups[group] = src[group];
+      }
+      paint(query);
+    }
+
+    function paint(query) {
       currentQuery = query || '';
       items = [];
       selectedIndex = -1;
       container.textContent = '';
-      const src = groups || {};
+      const src = lastGroups;
       for (const group of GROUP_ORDER) {
         const list = src[group];
         if (!Array.isArray(list) || list.length === 0) continue;
@@ -155,6 +173,7 @@
       items = [];
       selectedIndex = -1;
       currentQuery = '';
+      lastGroups = {};
       container.textContent = '';
     }
 
@@ -164,6 +183,7 @@
 
     return {
       render,
+      mergeGroups,
       clear,
       hasItems,
       getSelected,
