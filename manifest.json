@@ -24,7 +24,7 @@
       "description": "唤起聚焦搜索",
       "suggested_key": {
         "default": "Ctrl+Shift+K",
-        "mac": "Command+Shift+K"
+        "mac": "Alt+Space"
       }
     }
   },

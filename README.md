@@ -4,7 +4,7 @@ Chrome 扩展（Manifest V3）：Spotlight 风格的聚焦搜索 + 黑白灰磨�
 
 ## 功能
 
-- **聚焦搜索浮层**：任意页面按 `Cmd+Shift+K`（Windows/Linux：`Ctrl+Shift+K`）在当前页弹出居中搜索浮层，聚合搜索：
+- **聚焦搜索浮层**：任意页面按 `Option+空格`（Windows/Linux：`Ctrl+Shift+K`）在当前页弹出居中搜索浮层，聚合搜索：
   - 打开的标签页（Enter 切换而非新开）
   - 书签
   - 历史记录（近 30 天）
@@ -35,7 +35,7 @@ src/newtab/                新标签页
 1. 打开 `chrome://extensions`
 2. 开启右上角「开发者模式」
 3. 点击「加载已解压的扩展程序」，选择本仓库根目录
-4. 打开新标签页，或在任意页面按 `Cmd+Shift+K` / `Ctrl+Shift+K`
+4. 打开新标签页，或在任意页面按 `Option+空格`（Mac）/ `Ctrl+Shift+K`（Windows/Linux）
 
 ## 权限说明
 
