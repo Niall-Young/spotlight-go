@@ -8,6 +8,7 @@
   const grid = document.getElementById('nt-grid');
   const contextMenu = document.getElementById('nt-context-menu');
   const modalMask = document.getElementById('nt-modal-mask');
+  const modalHeading = document.getElementById('nt-modal-heading');
   const modalUrl = document.getElementById('nt-modal-url');
   const modalTitle = document.getElementById('nt-modal-title');
   const modalOk = document.getElementById('nt-modal-ok');
@@ -214,7 +215,7 @@
     title.className = 'nt-tile-title';
     title.textContent = '添加';
     tile.appendChild(title);
-    tile.addEventListener('click', openModal);
+    tile.addEventListener('click', () => openModal());
     return tile;
   }
 
@@ -225,6 +226,16 @@
   function showContextMenu(x, y, entry) {
     menuEntry = entry;
     contextMenu.textContent = '';
+
+    const edit = document.createElement('button');
+    edit.type = 'button';
+    edit.textContent = '编辑';
+    edit.addEventListener('click', () => {
+      hideContextMenu();
+      openModal(entry);
+    });
+    contextMenu.appendChild(edit);
+
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.textContent = '删除';
@@ -265,17 +276,27 @@
   });
   window.addEventListener('blur', hideContextMenu);
 
-  // ---------- 添加弹窗 ----------
+  // ---------- 添加/编辑弹窗 ----------
 
-  function openModal() {
-    modalUrl.value = '';
-    modalTitle.value = '';
+  let modalEntry = null;
+
+  function openModal(entry) {
+    modalEntry = entry || null;
+    modalHeading.textContent = modalEntry ? '编辑快捷方式' : '添加快捷方式';
+    modalHeading.parentElement.setAttribute(
+      'aria-label',
+      modalEntry ? '编辑快捷方式' : '添加快捷方式'
+    );
+    modalOk.textContent = modalEntry ? '保存' : '添加';
+    modalUrl.value = modalEntry ? modalEntry.url : '';
+    modalTitle.value = modalEntry ? modalEntry.title : '';
     modalMask.hidden = false;
     modalUrl.focus();
   }
 
   function closeModal() {
     modalMask.hidden = true;
+    modalEntry = null;
   }
 
   modalCancel.addEventListener('click', closeModal);
@@ -295,10 +316,20 @@
     }
     const title = modalTitle.value.trim() || hostOf(url);
     const shortcuts = await loadShortcuts();
-    await saveShortcuts([
-      ...shortcuts.filter((s) => s.url !== url),
-      { title, url }
-    ]);
+    if (modalEntry) {
+      const index = shortcuts.findIndex((s) => s.url === modalEntry.url);
+      if (index >= 0) {
+        shortcuts[index] = { title, url };
+      } else {
+        shortcuts.push({ title, url });
+      }
+      await saveShortcuts(shortcuts.filter((s, i) => i === index || s.url !== url));
+    } else {
+      await saveShortcuts([
+        ...shortcuts.filter((s) => s.url !== url),
+        { title, url }
+      ]);
+    }
     closeModal();
     renderGrid();
   }
