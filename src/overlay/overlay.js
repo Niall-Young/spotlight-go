@@ -101,7 +101,7 @@
     if (!footer) return;
     footer.textContent = query
       ? panel.hasItems()
-        ? '↑↓ 选择 · Enter 打开'
+        ? 'Tab 选择 · Enter 打开'
         : `Enter 搜索 “${query}”`
       : '输入以搜索标签页、书签、历史与网页';
   }
