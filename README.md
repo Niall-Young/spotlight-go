@@ -82,7 +82,8 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 | Shortcut | Context | Action |
 | :--- | :--- | :--- |
 | `Option + Space` *(Mac)*<br>`Ctrl + Shift + K` *(Win/Linux)* | Any webpage | Open / Dismiss Spotlight Search Overlay |
-| `↑` / `↓` | Overlay / New Tab | Navigate through grouped search results |
+| `Tab` / `Shift + Tab` | Overlay | Move selection down / up through grouped search results |
+| `↑` / `↓` | New Tab | Navigate through grouped search results |
 | `Enter` | Overlay / New Tab | Open selected item / Switch tab / Direct URL navigation / Web search |
 | `Esc` | Overlay | Close the overlay |
 | *Right-Click* | New Tab Tile | Open context menu (Edit / Delete / Open in new tab) |
