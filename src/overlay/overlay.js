@@ -34,16 +34,15 @@
   function startKeyBuffer() {
     if (pendingKeys !== null) return;
     pendingKeys = '';
-    window.addEventListener('keydown', bufferKeydown, true);
   }
 
   function stopKeyBuffer() {
     if (pendingKeys === null) return;
     pendingKeys = null;
-    window.removeEventListener('keydown', bufferKeydown, true);
   }
 
   function bufferKeydown(event) {
+    if (pendingKeys === null) return;
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     if (event.key === 'Backspace') {
       pendingKeys = pendingKeys.slice(0, -1);
@@ -53,7 +52,7 @@
       return;
     }
     event.preventDefault();
-    event.stopPropagation();
+    event.stopImmediatePropagation();
   }
 
   function flushKeyBuffer() {
@@ -130,6 +129,7 @@
   function watchTrigger(event) {
     if (host || pendingKeys !== null) return;
     if (!matchesTrigger(event)) return;
+    startKeyBuffer();
     openOverlay();
   }
 
@@ -148,6 +148,8 @@
   }
 
   window.addEventListener('keydown', watchTrigger, true);
+  // 在页面脚本注册按键监听前占位；等待浮层构建时拦下首字符。
+  window.addEventListener('keydown', bufferKeydown, true);
   loadTrigger();
 
   chrome.runtime.onMessage.addListener((message) => {
