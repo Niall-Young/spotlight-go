@@ -1082,7 +1082,7 @@ html[data-theme="dark"] body {
 
 .nt-style-card.is-active {
   border-color: var(--sg-text-secondary);
-  box-shadow: 0 0 0 1px var(--sg-text-secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sg-text-secondary) 18%, transparent);
   color: var(--sg-text);
 }
 
