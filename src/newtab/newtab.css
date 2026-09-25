@@ -1339,6 +1339,11 @@ html[data-style="pink"] .nt-search-card::before {
   display: none;
 }
 
+/* 宫格瓦片去描边（浅色/暗色一致） */
+html[data-style="pink"] .nt-tile {
+  border-color: transparent;
+}
+
 /* 少女贴纸立绘：压在搜索卡片右上缘，轻微上下浮动 */
 .nt-pink-deco {
   display: none;
