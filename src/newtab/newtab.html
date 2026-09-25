@@ -97,6 +97,20 @@
             </div>
 
             <div class="nt-settings-cell">
+              <div class="nt-settings-row">
+                <div class="nt-settings-head">
+                  <div class="nt-settings-name" data-i18n="settings.language.name">语言</div>
+                  <div class="nt-settings-desc" data-i18n="settings.language.desc">新标签页与搜索浮层的界面语言</div>
+                </div>
+                <div id="nt-settings-language" class="nt-segmented" role="radiogroup" aria-label="语言" data-i18n-aria="settings.language.name">
+                  <span class="nt-segmented-pill"></span>
+                  <button type="button" role="radio" data-lang="zh" aria-checked="true">中文</button>
+                  <button type="button" role="radio" data-lang="en" aria-checked="false">English</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="nt-settings-cell">
               <div class="nt-settings-head">
                 <div class="nt-settings-name" data-i18n="settings.sources.name">搜索内容</div>
                 <div class="nt-settings-desc" data-i18n="settings.sources.desc">选择聚焦搜索聚合的来源，网页搜索始终开启</div>
@@ -116,20 +130,6 @@
                 <input id="nt-settings-source-history" type="checkbox" />
                 <span class="nt-switch" aria-hidden="true"></span>
               </label>
-            </div>
-
-            <div class="nt-settings-cell">
-              <div class="nt-settings-row">
-                <div class="nt-settings-head">
-                  <div class="nt-settings-name" data-i18n="settings.language.name">语言</div>
-                  <div class="nt-settings-desc" data-i18n="settings.language.desc">新标签页与搜索浮层的界面语言</div>
-                </div>
-                <div id="nt-settings-language" class="nt-segmented" role="radiogroup" aria-label="语言" data-i18n-aria="settings.language.name">
-                  <span class="nt-segmented-pill"></span>
-                  <button type="button" role="radio" data-lang="zh" aria-checked="true">中文</button>
-                  <button type="button" role="radio" data-lang="en" aria-checked="false">English</button>
-                </div>
-              </div>
             </div>
           </section>
 
