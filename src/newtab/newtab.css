@@ -609,13 +609,15 @@ body::after {
   color: var(--sg-text);
 }
 
-/* 快捷入口：卡片列表 */
+/* 快捷入口：卡片列表；内边距 + 负外边距把滚动条移到卡片外侧，避免压在卡片右缘上 */
 .nt-settings-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   max-height: 260px;
   overflow-y: auto;
+  padding-right: 6px;
+  margin-right: -6px;
 }
 
 .nt-settings-list:empty {
