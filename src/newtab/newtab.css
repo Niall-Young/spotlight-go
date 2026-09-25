@@ -1389,6 +1389,8 @@ html[data-style="pink"][data-theme="dark"] {
   --nt-glass-bg: #3a2530;
   --nt-popover-bg: #332029;
   --nt-glass-border: rgba(250, 233, 241, 0.1);
+  --nt-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18);
+  --nt-glass-shadow-focus: 0 12px 32px rgba(0, 0, 0, 0.34), 0 2px 8px rgba(0, 0, 0, 0.22);
   --nt-tile-bg: #412a36;
   --nt-tile-border: rgba(250, 233, 241, 0.1);
   --nt-tile-icon-bg: #4e3341;
@@ -1419,6 +1421,8 @@ html[data-style="pink"][data-theme="dark"] .nt-segmented-pill {
     --nt-glass-bg: #3a2530;
     --nt-popover-bg: #332029;
     --nt-glass-border: rgba(250, 233, 241, 0.1);
+    --nt-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.18);
+    --nt-glass-shadow-focus: 0 12px 32px rgba(0, 0, 0, 0.34), 0 2px 8px rgba(0, 0, 0, 0.22);
     --nt-tile-bg: #412a36;
     --nt-tile-border: rgba(250, 233, 241, 0.1);
     --nt-tile-icon-bg: #4e3341;
