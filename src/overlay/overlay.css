@@ -182,11 +182,11 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* ===== 样式：简约黑白（neutral）—— 纯色平面，关闭磨砂 ===== */
+/* ===== 样式：简约黑白（neutral）—— 纯色平面，无半透明、无模糊、无边框 ===== */
 
 .sg-overlay-mask[data-sg-style="neutral"] .sg-overlay-panel {
-  background: rgba(255, 255, 255, 0.94);
-  border-color: rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-color: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow:
@@ -195,14 +195,14 @@
 }
 
 .sg-overlay-mask[data-sg-style="neutral"][data-sg-theme="dark"] .sg-overlay-panel {
-  background: rgba(24, 24, 27, 0.94);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: #1a1a1c;
+  border-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
   .sg-overlay-mask[data-sg-style="neutral"]:not([data-sg-theme="light"]) .sg-overlay-panel {
-    background: rgba(24, 24, 27, 0.94);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: #1a1a1c;
+    border-color: transparent;
   }
 }
 

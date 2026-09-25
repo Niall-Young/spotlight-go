@@ -1100,17 +1100,17 @@ html[data-theme="dark"] body {
   text-align: center;
 }
 
-/* ===== 样式：简约黑白（neutral）—— 纯色平面，关闭磨砂与噪点 ===== */
+/* ===== 样式：简约黑白（neutral）—— 纯色平面，无半透明、无模糊、无边框 ===== */
 
 html[data-style="neutral"] {
-  --nt-glass-bg: rgba(255, 255, 255, 0.94);
-  --nt-popover-bg: rgba(255, 255, 255, 0.97);
-  --nt-glass-border: rgba(0, 0, 0, 0.1);
+  --nt-glass-bg: #ffffff;
+  --nt-popover-bg: #ffffff;
+  --nt-glass-border: transparent;
   --nt-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
   --nt-glass-shadow-focus: 0 12px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
-  --nt-tile-bg: rgba(255, 255, 255, 0.9);
-  --nt-tile-border: rgba(0, 0, 0, 0.08);
-  --nt-tile-icon-bg: rgba(0, 0, 0, 0.04);
+  --nt-tile-bg: #ffffff;
+  --nt-tile-border: transparent;
+  --nt-tile-icon-bg: #f2f2f4;
 }
 
 html[data-style="neutral"] body {
@@ -1128,18 +1128,24 @@ html[data-style="neutral"] .nt-tile,
 html[data-style="neutral"] .nt-grid-nav,
 html[data-style="neutral"] .nt-context-menu,
 html[data-style="neutral"] .nt-modal,
+html[data-style="neutral"] .nt-modal-mask,
 html[data-style="neutral"] .nt-settings-fab {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
+/* 纯色平面不需要边框扫光动画 */
+html[data-style="neutral"] .nt-search-card::before {
+  display: none;
+}
+
 html[data-style="neutral"][data-theme="dark"] {
-  --nt-glass-bg: rgba(26, 26, 28, 0.94);
-  --nt-popover-bg: rgba(22, 22, 24, 0.97);
-  --nt-glass-border: rgba(255, 255, 255, 0.12);
-  --nt-tile-bg: rgba(255, 255, 255, 0.05);
-  --nt-tile-border: rgba(255, 255, 255, 0.1);
-  --nt-tile-icon-bg: rgba(255, 255, 255, 0.08);
+  --nt-glass-bg: #1a1a1c;
+  --nt-popover-bg: #161618;
+  --nt-glass-border: transparent;
+  --nt-tile-bg: #212123;
+  --nt-tile-border: transparent;
+  --nt-tile-icon-bg: #303032;
 }
 
 html[data-style="neutral"][data-theme="dark"] body {
@@ -1149,12 +1155,12 @@ html[data-style="neutral"][data-theme="dark"] body {
 
 @media (prefers-color-scheme: dark) {
   html[data-style="neutral"]:not([data-theme="light"]) {
-    --nt-glass-bg: rgba(26, 26, 28, 0.94);
-    --nt-popover-bg: rgba(22, 22, 24, 0.97);
-    --nt-glass-border: rgba(255, 255, 255, 0.12);
-    --nt-tile-bg: rgba(255, 255, 255, 0.05);
-    --nt-tile-border: rgba(255, 255, 255, 0.1);
-    --nt-tile-icon-bg: rgba(255, 255, 255, 0.08);
+    --nt-glass-bg: #1a1a1c;
+    --nt-popover-bg: #161618;
+    --nt-glass-border: transparent;
+    --nt-tile-bg: #212123;
+    --nt-tile-border: transparent;
+    --nt-tile-icon-bg: #303032;
   }
 
   html[data-style="neutral"]:not([data-theme="light"]) body {
