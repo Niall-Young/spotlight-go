@@ -1111,6 +1111,8 @@ html[data-style="neutral"] {
   --nt-tile-bg: #ffffff;
   --nt-tile-border: transparent;
   --nt-tile-icon-bg: #f2f2f4;
+  --nt-btn-bg: #f0f0f2;
+  --nt-btn-border: transparent;
 }
 
 html[data-style="neutral"] body {
@@ -1139,6 +1141,11 @@ html[data-style="neutral"] .nt-search-card::before {
   display: none;
 }
 
+/* 分段选择器：纯色容器无描边，选中滑块用纯色背景区分 */
+html[data-style="neutral"] .nt-segmented-pill {
+  background: #ffffff;
+}
+
 html[data-style="neutral"][data-theme="dark"] {
   --nt-glass-bg: #1a1a1c;
   --nt-popover-bg: #161618;
@@ -1146,6 +1153,13 @@ html[data-style="neutral"][data-theme="dark"] {
   --nt-tile-bg: #212123;
   --nt-tile-border: transparent;
   --nt-tile-icon-bg: #303032;
+  --nt-btn-bg: #2a2a2c;
+  --nt-btn-border: transparent;
+}
+
+html[data-style="neutral"][data-theme="dark"] .nt-segmented-pill {
+  background: #424245;
+  box-shadow: none;
 }
 
 html[data-style="neutral"][data-theme="dark"] body {
@@ -1161,6 +1175,13 @@ html[data-style="neutral"][data-theme="dark"] body {
     --nt-tile-bg: #212123;
     --nt-tile-border: transparent;
     --nt-tile-icon-bg: #303032;
+    --nt-btn-bg: #2a2a2c;
+    --nt-btn-border: transparent;
+  }
+
+  html[data-style="neutral"]:not([data-theme="light"]) .nt-segmented-pill {
+    background: #424245;
+    box-shadow: none;
   }
 
   html[data-style="neutral"]:not([data-theme="light"]) body {
