@@ -54,7 +54,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/overlay/overlay.css", "src/shared/results-panel.css", "_favicon/*"],
+      "resources": ["src/overlay/overlay.css", "src/shared/results-panel.css", "assets/pink-girl.png", "_favicon/*"],
       "matches": ["<all_urls>"]
     }
   ]

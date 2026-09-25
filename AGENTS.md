@@ -8,6 +8,7 @@ Chrome 扩展（Manifest V3）：快捷键唤起的 Spotlight 风格聚焦搜索
 - `src/shared/results-panel.*` 是 overlay 与新标签页复用的分组结果面板：改结果展示时改共享模块，不要在两处各自实现。
 - `src/shared/i18n.js` 是 overlay 与新标签页共用的中英文案模块：所有界面文案在此按键维护，新增界面文本时加 key 并走 `data-i18n*` / `SpotlightI18n.t()`，不要在页面里硬编码。
 - `src/overlay/` 以 closed Shadow DOM 注入任意页面（`matches: <all_urls>`），样式必须与宿主页面完全隔离，不得依赖或泄漏全局 CSS。
+- 浮层在宿主页面内引用扩展资源（如 `assets/pink-girl.png` 贴纸装饰）时，必须把资源登记进 `manifest.json` 的 `web_accessible_resources` 并用 `chrome.runtime.getURL()` 取地址；新标签页内可直接相对路径引用。
 - 搜索聚合与打开结果都在 `src/background/service-worker.js` 中完成；页面侧只通过 `chrome.runtime` 消息通信。
 
 ## 工作流

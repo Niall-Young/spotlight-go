@@ -458,7 +458,18 @@
     box.appendChild(header);
     box.appendChild(results);
     box.appendChild(footer);
-    mask.appendChild(box);
+
+    // 面板包一层定位容器，贴纸装饰（仅少女粉样式显示）探出面板右上角
+    const wrap = document.createElement('div');
+    wrap.className = 'sg-overlay-panel-wrap';
+    const deco = document.createElement('img');
+    deco.className = 'sg-overlay-deco';
+    deco.src = chrome.runtime.getURL('assets/pink-girl.png');
+    deco.alt = '';
+    deco.setAttribute('aria-hidden', 'true');
+    wrap.appendChild(deco);
+    wrap.appendChild(box);
+    mask.appendChild(wrap);
     shadow.appendChild(mask);
 
     document.documentElement.appendChild(host);

@@ -24,9 +24,14 @@
   color-scheme: light;
 }
 
-.sg-overlay-panel {
+.sg-overlay-panel-wrap {
+  position: relative;
   margin-top: 18vh;
   width: min(640px, calc(100vw - 48px));
+}
+
+.sg-overlay-panel {
+  width: 100%;
   max-height: min(480px, 70vh);
   display: flex;
   flex-direction: column;
@@ -293,84 +298,126 @@
   }
 }
 
-/* ===== 样式：少女粉（pink）—— 粉色调 ===== */
+/* ===== 样式：少女粉（pink）—— 贴纸风纯色平面，无半透明、无模糊 ===== */
+
+/* 贴纸装饰默认隐藏，仅少女粉样式显示，从面板右上角探出（面板后渲染，压住贴纸下缘） */
+.sg-overlay-deco {
+  display: none;
+}
 
 .sg-overlay-mask[data-sg-style="pink"] {
-  --sg-text: #473038;
-  --sg-text-secondary: rgba(71, 48, 56, 0.48);
-  --sg-selected-bg: rgba(214, 112, 147, 0.12);
-  --sg-mark-bg: rgba(214, 112, 147, 0.16);
-  --sg-divider: rgba(71, 48, 56, 0.08);
+  --sg-text: #5a3644;
+  --sg-text-secondary: rgba(90, 54, 68, 0.52);
+  --sg-selected-bg: rgba(232, 90, 138, 0.14);
+  --sg-mark-bg: rgba(232, 90, 138, 0.2);
+  --sg-divider: rgba(90, 54, 68, 0.08);
 }
 
 .sg-overlay-mask[data-sg-style="pink"] .sg-overlay-panel {
-  background: rgba(255, 244, 249, 0.72);
-  border-color: rgba(255, 255, 255, 0.65);
+  background: #fff7fa;
+  border-color: #f5c6da;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 16px 40px rgba(214, 86, 132, 0.2),
+    0 2px 6px rgba(214, 86, 132, 0.1);
 }
 
 .sg-overlay-mask[data-sg-style="pink"] .sg-overlay-search-icon {
-  color: rgba(71, 48, 56, 0.4);
+  color: #e85a8a;
 }
 
 .sg-overlay-mask[data-sg-style="pink"] .sg-overlay-input::placeholder {
-  color: rgba(71, 48, 56, 0.32);
+  color: rgba(90, 54, 68, 0.35);
 }
 
 .sg-overlay-mask[data-sg-style="pink"] .sg-overlay-esc {
-  background: rgba(71, 48, 56, 0.05);
-  border-color: rgba(71, 48, 56, 0.08);
+  background: rgba(232, 90, 138, 0.12);
+  border-color: transparent;
+}
+
+.sg-overlay-mask[data-sg-style="pink"] .sg-overlay-deco {
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 6px;
+  width: 108px;
+  height: auto;
+  transform: translateY(-68%) rotate(8deg);
+  pointer-events: none;
+  user-select: none;
+  animation: sg-pink-deco-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) 0.06s backwards;
+}
+
+@keyframes sg-pink-deco-in {
+  from {
+    opacity: 0;
+    transform: translateY(-52%) rotate(8deg) scale(0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-overlay-mask[data-sg-style="pink"] .sg-overlay-deco {
+    animation: none;
+  }
 }
 
 .sg-overlay-mask[data-sg-style="pink"][data-sg-theme="dark"] {
-  --sg-text: #f6e9ef;
-  --sg-text-secondary: rgba(246, 233, 239, 0.48);
-  --sg-selected-bg: rgba(246, 233, 239, 0.09);
-  --sg-mark-bg: rgba(214, 112, 147, 0.28);
-  --sg-divider: rgba(246, 233, 239, 0.09);
+  --sg-text: #fae9f1;
+  --sg-text-secondary: rgba(250, 233, 241, 0.52);
+  --sg-selected-bg: rgba(250, 233, 241, 0.1);
+  --sg-mark-bg: rgba(232, 90, 138, 0.35);
+  --sg-divider: rgba(250, 233, 241, 0.1);
 }
 
 .sg-overlay-mask[data-sg-style="pink"][data-sg-theme="dark"] .sg-overlay-panel {
-  background: rgba(47, 32, 40, 0.78);
-  border-color: rgba(246, 233, 239, 0.12);
+  background: #3a2530;
+  border-color: rgba(250, 233, 241, 0.1);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .sg-overlay-mask[data-sg-style="pink"][data-sg-theme="dark"] .sg-overlay-search-icon {
-  color: rgba(246, 233, 239, 0.4);
+  color: #f0a5c2;
 }
 
 .sg-overlay-mask[data-sg-style="pink"][data-sg-theme="dark"] .sg-overlay-input::placeholder {
-  color: rgba(246, 233, 239, 0.3);
+  color: rgba(250, 233, 241, 0.3);
 }
 
 .sg-overlay-mask[data-sg-style="pink"][data-sg-theme="dark"] .sg-overlay-esc {
-  background: rgba(246, 233, 239, 0.09);
-  border-color: rgba(246, 233, 239, 0.12);
+  background: rgba(250, 233, 241, 0.08);
+  border-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
   .sg-overlay-mask[data-sg-style="pink"]:not([data-sg-theme="light"]) {
-    --sg-text: #f6e9ef;
-    --sg-text-secondary: rgba(246, 233, 239, 0.48);
-    --sg-selected-bg: rgba(246, 233, 239, 0.09);
-    --sg-mark-bg: rgba(214, 112, 147, 0.28);
-    --sg-divider: rgba(246, 233, 239, 0.09);
+    --sg-text: #fae9f1;
+    --sg-text-secondary: rgba(250, 233, 241, 0.52);
+    --sg-selected-bg: rgba(250, 233, 241, 0.1);
+    --sg-mark-bg: rgba(232, 90, 138, 0.35);
+    --sg-divider: rgba(250, 233, 241, 0.1);
   }
 
   .sg-overlay-mask[data-sg-style="pink"]:not([data-sg-theme="light"]) .sg-overlay-panel {
-    background: rgba(47, 32, 40, 0.78);
-    border-color: rgba(246, 233, 239, 0.12);
+    background: #3a2530;
+    border-color: rgba(250, 233, 241, 0.1);
+    box-shadow:
+      0 24px 64px rgba(0, 0, 0, 0.5),
+      0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
   .sg-overlay-mask[data-sg-style="pink"]:not([data-sg-theme="light"]) .sg-overlay-search-icon {
-    color: rgba(246, 233, 239, 0.4);
+    color: #f0a5c2;
   }
 
   .sg-overlay-mask[data-sg-style="pink"]:not([data-sg-theme="light"]) .sg-overlay-input::placeholder {
-    color: rgba(246, 233, 239, 0.3);
+    color: rgba(250, 233, 241, 0.3);
   }
 
   .sg-overlay-mask[data-sg-style="pink"]:not([data-sg-theme="light"]) .sg-overlay-esc {
-    background: rgba(246, 233, 239, 0.09);
-    border-color: rgba(246, 233, 239, 0.12);
+    background: rgba(250, 233, 241, 0.08);
+    border-color: transparent;
   }
 }
