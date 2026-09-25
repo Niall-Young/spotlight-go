@@ -4,7 +4,7 @@
   const SHORTCUTS_KEY = 'pinnedShortcuts';
   const CUSTOM_SHORTCUT_KEY = 'customShortcut';
   const SOURCES_KEY = 'searchSources';
-  const DEFAULT_SOURCES = { bookmark: true, history: true };
+  const DEFAULT_SOURCES = { tab: true, bookmark: true, history: true };
 
   const input = document.getElementById('nt-input');
   const resultsEl = document.getElementById('nt-results');
@@ -31,6 +31,7 @@
   const settingsShortcutHint = document.getElementById('nt-settings-shortcut-hint');
   const settingsShortcutSave = document.getElementById('nt-settings-shortcut-save');
   const settingsShortcutCancel = document.getElementById('nt-settings-shortcut-cancel');
+  const sourceTab = document.getElementById('nt-settings-source-tab');
   const sourceBookmark = document.getElementById('nt-settings-source-bookmark');
   const sourceHistory = document.getElementById('nt-settings-source-history');
   const settingsClose = document.getElementById('nt-settings-close');
@@ -463,17 +464,20 @@
 
   async function renderSources() {
     const sources = await loadSources();
+    sourceTab.checked = sources.tab;
     sourceBookmark.checked = sources.bookmark;
     sourceHistory.checked = sources.history;
   }
 
   async function onSourceChange() {
     const sources = await loadSources();
+    sources.tab = sourceTab.checked;
     sources.bookmark = sourceBookmark.checked;
     sources.history = sourceHistory.checked;
     chrome.storage.local.set({ [SOURCES_KEY]: sources });
   }
 
+  sourceTab.addEventListener('change', onSourceChange);
   sourceBookmark.addEventListener('change', onSourceChange);
   sourceHistory.addEventListener('change', onSourceChange);
 

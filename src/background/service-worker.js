@@ -10,7 +10,7 @@ const STATS_MAX_QUERIES = 80;
 const STATS_MAX_URLS_PER_QUERY = 12;
 const STATS_TTL_MS = 45 * 24 * 60 * 60 * 1000;
 const SOURCES_KEY = 'searchSources';
-const DEFAULT_SOURCES = { bookmark: true, history: true };
+const DEFAULT_SOURCES = { tab: true, bookmark: true, history: true };
 
 const Rank = self.SpotlightRank;
 
@@ -128,7 +128,7 @@ async function consumeSuggestions(query) {
 
 // ---------- 本地搜索（打分 + 去重） ----------
 
-// 搜索来源开关（设置弹窗可关书签/历史）；缓存结果，storage 变更即失效
+// 搜索来源开关（设置弹窗可关标签页/书签/历史）；缓存结果，storage 变更即失效
 let searchSourcesCache = null;
 
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -155,7 +155,7 @@ async function localSearch(query) {
   const stats = await loadSelectionStats();
   const sources = await loadSearchSources();
   const [tab, bookmark, history] = await Promise.all([
-    searchTabs(q, stats),
+    sources.tab ? searchTabs(q, stats) : [],
     sources.bookmark ? searchBookmarks(q, stats) : [],
     sources.history ? searchHistory(q, stats) : []
   ]);
