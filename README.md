@@ -8,14 +8,14 @@
 
 [![Manifest V3](https://img.shields.io/badge/Chrome_Extension-Manifest_V3-10b981.svg?style=flat-square&logo=googlechrome&logoColor=white)](manifest.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
-[![Privacy: Zero Tracking](https://img.shields.io/badge/Privacy-Zero_Data_Collection-purple.svg?style=flat-square)](PRIVACY.md)
+[![Privacy: Zero Tracking](https://img.shields.io/badge/Privacy-Zero_Data_Collection-purple.svg?style=flat-square)](docs/PRIVACY.md)
 [![Platform: Chromium](https://img.shields.io/badge/Platform-Chrome%20%7C%20Edge%20%7C%20Brave-informational.svg?style=flat-square)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/Niall-Young/spotlight-go/pulls)
 [![GitHub Stars](https://img.shields.io/github/stars/Niall-Young/spotlight-go?style=flat-square&color=ffd700)](https://github.com/Niall-Young/spotlight-go/stargazers)
 [![GitHub Issues](https://img.shields.io/github/issues/Niall-Young/spotlight-go?style=flat-square&color=orange)](https://github.com/Niall-Young/spotlight-go/issues)
 
 <p align="center">
-  <b>English</b> • <a href="README_zh.md">简体中文</a>
+  <b>English</b> • <a href="README.zh-CN.md">简体中文</a>
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
   <a href="#-quick-start">Quick Start</a> •
   <a href="#-permissions">Permissions</a> •
   <a href="#-architecture">Architecture</a> •
-  <a href="PRIVACY.md">Privacy</a> •
+  <a href="docs/PRIVACY.md">Privacy</a> •
   <a href="LICENSE">License</a>
 </p>
 
@@ -131,7 +131,7 @@ We believe in radical transparency. Every permission requested in `manifest.json
 | `https://www.google.com/complete/*`<br>`https://*.bing.com/osjson.aspx*` | Fetches search autocompletion suggestions directly from Google (with fallback to Bing). |
 
 > [!NOTE]
-> Spotlight Go does **NOT** collect, store, or transmit any user data. All indexing and ranking happens 100% locally in your browser. For full details, see the [Privacy Policy](PRIVACY.md).
+> Spotlight Go does **NOT** collect, store, or transmit any user data. All indexing and ranking happens 100% locally in your browser. For full details, see the [Privacy Policy](docs/PRIVACY.md).
 
 ---
 
@@ -139,7 +139,9 @@ We believe in radical transparency. Every permission requested in `manifest.json
 
 ```text
 spotlight-go/
-├── assets/                    # Application icons & vector graphics (SVG, PNG)
+├── docs/                      # Governance & policy documents
+│   └── PRIVACY.md             # Privacy policy (zero data collection, all local)
+├── assets/                    # Runtime assets: extension icons + style preview thumbnails
 ├── src/
 │   ├── background/            # Manifest V3 service worker
 │   │   ├── service-worker.js  # Command router, multi-source search aggregator
@@ -155,10 +157,11 @@ spotlight-go/
 │       ├── i18n.js            # Chinese / English UI strings shared by overlay & newtab
 │       ├── results-panel.js   # Grouped search results list shared by overlay & newtab
 │       └── results-panel.css  # Shared typography, icons, and keyboard navigation styling
-├── manifest.json              # Chrome Extension MV3 manifest
-├── PRIVACY.md                 # Privacy policy
+├── manifest.json              # Chrome Extension MV3 manifest (must stay at repo root)
+├── AGENTS.md                  # AI agent working conventions (must stay at repo root)
 ├── LICENSE                    # MIT open-source license
-└── README.md                  # Project documentation
+├── README.md                  # English docs (default)
+└── README.zh-CN.md            # Simplified Chinese docs
 ```
 
 ---
@@ -166,7 +169,7 @@ spotlight-go/
 ## 📄 Repository Documents
 
 * [📜 MIT License](LICENSE)
-* [🔒 Privacy Policy](PRIVACY.md)
+* [🔒 Privacy Policy](docs/PRIVACY.md)
 * [⚙️ Extension Manifest](manifest.json)
 * [🤖 AI Agents Guide](AGENTS.md)
 * [🐛 Issues & Feedback](https://github.com/Niall-Young/spotlight-go/issues)
