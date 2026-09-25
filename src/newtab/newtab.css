@@ -1238,6 +1238,11 @@ html[data-style="paper"] .nt-search-card::before {
   display: none;
 }
 
+/* 分段选择器：选中滑块与弹出层同色 */
+html[data-style="paper"] .nt-segmented-pill {
+  background: var(--nt-popover-bg);
+}
+
 html[data-style="paper"][data-theme="dark"] {
   --sg-text: #faf9f5;
   --sg-text-secondary: rgba(250, 249, 245, 0.5);
