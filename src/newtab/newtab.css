@@ -699,8 +699,9 @@ html[data-theme="dark"] body {
   display: none;
 }
 
-/* 通用分区：模块为「左标题、右配置」的 cell，模块间距 24px */
-.nt-settings-section[data-section="general"] {
+/* 通用/外观分区：模块为「左标题、右配置」的 cell，模块间距 24px */
+.nt-settings-section[data-section="general"],
+.nt-settings-section[data-section="appearance"] {
   gap: 24px;
 }
 
@@ -733,7 +734,7 @@ html[data-theme="dark"] body {
   gap: 3px;
 }
 
-/* 快捷入口分区：标题在左，「添加」按钮在右 */
+/* 快速入口分区：标题在左，「添加」按钮在右 */
 .nt-settings-head-row {
   flex-direction: row;
   align-items: flex-start;
@@ -829,7 +830,7 @@ html[data-theme="dark"] body {
   color: var(--sg-text);
 }
 
-/* 快捷入口：卡片列表，由外层内容区统一滚动 */
+/* 快速入口：卡片列表，由外层内容区统一滚动 */
 .nt-settings-list {
   display: flex;
   flex-direction: column;
@@ -1050,5 +1051,284 @@ html[data-theme="dark"] body {
 
   .nt-settings-nav-item.is-active {
     background: var(--nt-btn-bg);
+  }
+}
+
+/* 样式选择器：2×2 图片卡片 */
+.nt-style-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.nt-style-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--nt-tile-border);
+  background: var(--nt-tile-bg);
+  color: var(--sg-text-secondary);
+  font-size: 12.5px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+
+.nt-style-card:hover {
+  color: var(--sg-text);
+}
+
+.nt-style-card.is-active {
+  border-color: var(--sg-text-secondary);
+  box-shadow: 0 0 0 1px var(--sg-text-secondary);
+  color: var(--sg-text);
+}
+
+.nt-style-card-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 9px;
+  pointer-events: none;
+}
+
+.nt-style-card-label {
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* ===== 样式：简约黑白（neutral）—— 纯色平面，关闭磨砂与噪点 ===== */
+
+html[data-style="neutral"] {
+  --nt-glass-bg: rgba(255, 255, 255, 0.94);
+  --nt-popover-bg: rgba(255, 255, 255, 0.97);
+  --nt-glass-border: rgba(0, 0, 0, 0.1);
+  --nt-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --nt-glass-shadow-focus: 0 12px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --nt-tile-bg: rgba(255, 255, 255, 0.9);
+  --nt-tile-border: rgba(0, 0, 0, 0.08);
+  --nt-tile-icon-bg: rgba(0, 0, 0, 0.04);
+}
+
+html[data-style="neutral"] body {
+  background-color: #f4f4f5;
+  background-image: none;
+}
+
+html[data-style="neutral"] body::after {
+  display: none;
+}
+
+html[data-style="neutral"] .nt-search-card,
+html[data-style="neutral"] .nt-results,
+html[data-style="neutral"] .nt-tile,
+html[data-style="neutral"] .nt-grid-nav,
+html[data-style="neutral"] .nt-context-menu,
+html[data-style="neutral"] .nt-modal,
+html[data-style="neutral"] .nt-settings-fab {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-style="neutral"][data-theme="dark"] {
+  --nt-glass-bg: rgba(26, 26, 28, 0.94);
+  --nt-popover-bg: rgba(22, 22, 24, 0.97);
+  --nt-glass-border: rgba(255, 255, 255, 0.12);
+  --nt-tile-bg: rgba(255, 255, 255, 0.05);
+  --nt-tile-border: rgba(255, 255, 255, 0.1);
+  --nt-tile-icon-bg: rgba(255, 255, 255, 0.08);
+}
+
+html[data-style="neutral"][data-theme="dark"] body {
+  background-color: #131315;
+  background-image: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-style="neutral"]:not([data-theme="light"]) {
+    --nt-glass-bg: rgba(26, 26, 28, 0.94);
+    --nt-popover-bg: rgba(22, 22, 24, 0.97);
+    --nt-glass-border: rgba(255, 255, 255, 0.12);
+    --nt-tile-bg: rgba(255, 255, 255, 0.05);
+    --nt-tile-border: rgba(255, 255, 255, 0.1);
+    --nt-tile-icon-bg: rgba(255, 255, 255, 0.08);
+  }
+
+  html[data-style="neutral"]:not([data-theme="light"]) body {
+    background-color: #131315;
+    background-image: none;
+  }
+}
+
+/* ===== 样式：牛皮纸（paper）—— 暖米色调 ===== */
+
+html[data-style="paper"] {
+  --sg-text: #40372a;
+  --sg-text-secondary: rgba(64, 55, 42, 0.5);
+  --sg-selected-bg: rgba(64, 55, 42, 0.07);
+  --sg-mark-bg: rgba(64, 55, 42, 0.1);
+  --sg-divider: rgba(64, 55, 42, 0.09);
+  --nt-glass-bg: rgba(250, 244, 231, 0.6);
+  --nt-popover-bg: rgba(247, 240, 226, 0.82);
+  --nt-glass-border: rgba(255, 252, 243, 0.7);
+  --nt-tile-bg: rgba(250, 244, 231, 0.5);
+  --nt-tile-border: rgba(255, 252, 243, 0.6);
+  --nt-tile-icon-bg: rgba(255, 252, 243, 0.75);
+  --nt-btn-bg: rgba(64, 55, 42, 0.06);
+  --nt-btn-border: rgba(64, 55, 42, 0.12);
+  --nt-btn-primary-bg: #40372a;
+  --nt-btn-primary-text: #faf4e6;
+}
+
+html[data-style="paper"] body {
+  background-color: #ece2cd;
+  background-image:
+    radial-gradient(52% 40% at 18% 14%, rgba(255, 251, 240, 0.95) 0%, transparent 62%),
+    radial-gradient(46% 42% at 84% 22%, rgba(196, 172, 128, 0.4) 0%, transparent 64%),
+    radial-gradient(58% 48% at 68% 88%, rgba(166, 142, 100, 0.35) 0%, transparent 62%),
+    radial-gradient(40% 36% at 8% 84%, rgba(214, 194, 156, 0.45) 0%, transparent 62%);
+}
+
+html[data-style="paper"][data-theme="dark"] {
+  --sg-text: #f0e8d8;
+  --sg-text-secondary: rgba(240, 232, 216, 0.48);
+  --sg-selected-bg: rgba(240, 232, 216, 0.09);
+  --sg-mark-bg: rgba(240, 232, 216, 0.13);
+  --sg-divider: rgba(240, 232, 216, 0.09);
+  --nt-glass-bg: rgba(48, 40, 29, 0.6);
+  --nt-popover-bg: rgba(41, 34, 25, 0.85);
+  --nt-glass-border: rgba(240, 232, 216, 0.1);
+  --nt-tile-bg: rgba(240, 232, 216, 0.07);
+  --nt-tile-border: rgba(240, 232, 216, 0.09);
+  --nt-tile-icon-bg: rgba(240, 232, 216, 0.11);
+  --nt-btn-bg: rgba(240, 232, 216, 0.08);
+  --nt-btn-border: rgba(240, 232, 216, 0.13);
+  --nt-btn-primary-bg: #f0e8d8;
+  --nt-btn-primary-text: #2c2418;
+}
+
+html[data-style="paper"][data-theme="dark"] body {
+  background-color: #201a12;
+  background-image:
+    radial-gradient(52% 40% at 18% 14%, rgba(96, 80, 54, 0.35) 0%, transparent 60%),
+    radial-gradient(46% 42% at 84% 22%, rgba(70, 58, 38, 0.42) 0%, transparent 62%),
+    radial-gradient(58% 48% at 68% 88%, rgba(58, 48, 32, 0.5) 0%, transparent 60%),
+    radial-gradient(40% 36% at 8% 84%, rgba(80, 66, 44, 0.32) 0%, transparent 60%);
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-style="paper"]:not([data-theme="light"]) {
+    --sg-text: #f0e8d8;
+    --sg-text-secondary: rgba(240, 232, 216, 0.48);
+    --sg-selected-bg: rgba(240, 232, 216, 0.09);
+    --sg-mark-bg: rgba(240, 232, 216, 0.13);
+    --sg-divider: rgba(240, 232, 216, 0.09);
+    --nt-glass-bg: rgba(48, 40, 29, 0.6);
+    --nt-popover-bg: rgba(41, 34, 25, 0.85);
+    --nt-glass-border: rgba(240, 232, 216, 0.1);
+    --nt-tile-bg: rgba(240, 232, 216, 0.07);
+    --nt-tile-border: rgba(240, 232, 216, 0.09);
+    --nt-tile-icon-bg: rgba(240, 232, 216, 0.11);
+    --nt-btn-bg: rgba(240, 232, 216, 0.08);
+    --nt-btn-border: rgba(240, 232, 216, 0.13);
+    --nt-btn-primary-bg: #f0e8d8;
+    --nt-btn-primary-text: #2c2418;
+  }
+
+  html[data-style="paper"]:not([data-theme="light"]) body {
+    background-color: #201a12;
+    background-image:
+      radial-gradient(52% 40% at 18% 14%, rgba(96, 80, 54, 0.35) 0%, transparent 60%),
+      radial-gradient(46% 42% at 84% 22%, rgba(70, 58, 38, 0.42) 0%, transparent 62%),
+      radial-gradient(58% 48% at 68% 88%, rgba(58, 48, 32, 0.5) 0%, transparent 60%),
+      radial-gradient(40% 36% at 8% 84%, rgba(80, 66, 44, 0.32) 0%, transparent 60%);
+  }
+}
+
+/* ===== 样式：少女粉（pink）—— 粉色调 ===== */
+
+html[data-style="pink"] {
+  --sg-text: #473038;
+  --sg-text-secondary: rgba(71, 48, 56, 0.48);
+  --sg-selected-bg: rgba(214, 112, 147, 0.12);
+  --sg-mark-bg: rgba(214, 112, 147, 0.16);
+  --sg-divider: rgba(71, 48, 56, 0.08);
+  --nt-glass-bg: rgba(255, 243, 248, 0.6);
+  --nt-popover-bg: rgba(255, 244, 249, 0.82);
+  --nt-glass-border: rgba(255, 255, 255, 0.7);
+  --nt-tile-bg: rgba(255, 243, 248, 0.5);
+  --nt-tile-border: rgba(255, 255, 255, 0.6);
+  --nt-tile-icon-bg: rgba(255, 255, 255, 0.75);
+  --nt-btn-bg: rgba(71, 48, 56, 0.05);
+  --nt-btn-border: rgba(71, 48, 56, 0.1);
+  --nt-btn-primary-bg: #473038;
+  --nt-btn-primary-text: #fff3f8;
+}
+
+html[data-style="pink"] body {
+  background-color: #f7e6ee;
+  background-image:
+    radial-gradient(52% 40% at 18% 14%, rgba(255, 255, 255, 0.95) 0%, transparent 62%),
+    radial-gradient(46% 42% at 84% 22%, rgba(244, 180, 205, 0.45) 0%, transparent 64%),
+    radial-gradient(58% 48% at 68% 88%, rgba(232, 148, 180, 0.38) 0%, transparent 62%),
+    radial-gradient(40% 36% at 8% 84%, rgba(248, 205, 222, 0.5) 0%, transparent 62%);
+}
+
+html[data-style="pink"][data-theme="dark"] {
+  --sg-text: #f6e9ef;
+  --sg-text-secondary: rgba(246, 233, 239, 0.48);
+  --sg-selected-bg: rgba(246, 233, 239, 0.09);
+  --sg-mark-bg: rgba(214, 112, 147, 0.28);
+  --sg-divider: rgba(246, 233, 239, 0.09);
+  --nt-glass-bg: rgba(56, 39, 47, 0.6);
+  --nt-popover-bg: rgba(47, 32, 40, 0.85);
+  --nt-glass-border: rgba(246, 233, 239, 0.1);
+  --nt-tile-bg: rgba(246, 233, 239, 0.07);
+  --nt-tile-border: rgba(246, 233, 239, 0.09);
+  --nt-tile-icon-bg: rgba(246, 233, 239, 0.11);
+  --nt-btn-bg: rgba(246, 233, 239, 0.08);
+  --nt-btn-border: rgba(246, 233, 239, 0.13);
+  --nt-btn-primary-bg: #f6e9ef;
+  --nt-btn-primary-text: #33222b;
+}
+
+html[data-style="pink"][data-theme="dark"] body {
+  background-color: #22161d;
+  background-image:
+    radial-gradient(52% 40% at 18% 14%, rgba(96, 58, 76, 0.35) 0%, transparent 60%),
+    radial-gradient(46% 42% at 84% 22%, rgba(72, 44, 58, 0.42) 0%, transparent 62%),
+    radial-gradient(58% 48% at 68% 88%, rgba(60, 36, 48, 0.5) 0%, transparent 60%),
+    radial-gradient(40% 36% at 8% 84%, rgba(84, 52, 66, 0.32) 0%, transparent 60%);
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-style="pink"]:not([data-theme="light"]) {
+    --sg-text: #f6e9ef;
+    --sg-text-secondary: rgba(246, 233, 239, 0.48);
+    --sg-selected-bg: rgba(246, 233, 239, 0.09);
+    --sg-mark-bg: rgba(214, 112, 147, 0.28);
+    --sg-divider: rgba(246, 233, 239, 0.09);
+    --nt-glass-bg: rgba(56, 39, 47, 0.6);
+    --nt-popover-bg: rgba(47, 32, 40, 0.85);
+    --nt-glass-border: rgba(246, 233, 239, 0.1);
+    --nt-tile-bg: rgba(246, 233, 239, 0.07);
+    --nt-tile-border: rgba(246, 233, 239, 0.09);
+    --nt-tile-icon-bg: rgba(246, 233, 239, 0.11);
+    --nt-btn-bg: rgba(246, 233, 239, 0.08);
+    --nt-btn-border: rgba(246, 233, 239, 0.13);
+    --nt-btn-primary-bg: #f6e9ef;
+    --nt-btn-primary-text: #33222b;
+  }
+
+  html[data-style="pink"]:not([data-theme="light"]) body {
+    background-color: #22161d;
+    background-image:
+      radial-gradient(52% 40% at 18% 14%, rgba(96, 58, 76, 0.35) 0%, transparent 60%),
+      radial-gradient(46% 42% at 84% 22%, rgba(72, 44, 58, 0.42) 0%, transparent 62%),
+      radial-gradient(58% 48% at 68% 88%, rgba(60, 36, 48, 0.5) 0%, transparent 60%),
+      radial-gradient(40% 36% at 8% 84%, rgba(84, 52, 66, 0.32) 0%, transparent 60%);
   }
 }

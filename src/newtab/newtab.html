@@ -69,41 +69,12 @@
         <nav class="nt-settings-nav" aria-label="设置分类" data-i18n-aria="settings.title">
           <div class="nt-settings-nav-pill" aria-hidden="true"></div>
           <button type="button" class="nt-settings-nav-item is-active" data-section="general" data-i18n="settings.nav.general">通用</button>
-          <button type="button" class="nt-settings-nav-item" data-section="shortcuts" data-i18n="settings.nav.shortcuts">快捷入口</button>
-          <button type="button" class="nt-settings-nav-item" data-section="sources" data-i18n="settings.nav.sources">搜索内容</button>
+          <button type="button" class="nt-settings-nav-item" data-section="shortcuts" data-i18n="settings.nav.shortcuts">快速入口</button>
+          <button type="button" class="nt-settings-nav-item" data-section="appearance" data-i18n="settings.nav.appearance">外观</button>
         </nav>
 
         <div class="nt-settings-content">
           <section class="nt-settings-section" data-section="general">
-            <div class="nt-settings-cell">
-              <div class="nt-settings-row">
-                <div class="nt-settings-head">
-                  <div class="nt-settings-name" data-i18n="settings.theme.name">主题</div>
-                  <div class="nt-settings-desc" data-i18n="settings.theme.desc">新标签页与搜索浮层的外观</div>
-                </div>
-                <div id="nt-settings-theme" class="nt-segmented" role="radiogroup" aria-label="主题" data-i18n-aria="settings.theme.name">
-                  <span class="nt-segmented-pill"></span>
-                  <button type="button" role="radio" data-theme="system" aria-checked="true" data-i18n="settings.theme.system">跟随浏览器</button>
-                  <button type="button" role="radio" data-theme="light" aria-checked="false" data-i18n="settings.theme.light">亮色</button>
-                  <button type="button" role="radio" data-theme="dark" aria-checked="false" data-i18n="settings.theme.dark">暗色</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="nt-settings-cell">
-              <div class="nt-settings-row">
-                <div class="nt-settings-head">
-                  <div class="nt-settings-name" data-i18n="settings.language.name">语言</div>
-                  <div class="nt-settings-desc" data-i18n="settings.language.desc">新标签页与搜索浮层的界面语言</div>
-                </div>
-                <div id="nt-settings-language" class="nt-segmented" role="radiogroup" aria-label="语言" data-i18n-aria="settings.language.name">
-                  <span class="nt-segmented-pill"></span>
-                  <button type="button" role="radio" data-lang="zh" aria-checked="true">中文</button>
-                  <button type="button" role="radio" data-lang="en" aria-checked="false">English</button>
-                </div>
-              </div>
-            </div>
-
             <div class="nt-settings-cell">
               <div class="nt-settings-row">
                 <div class="nt-settings-head">
@@ -124,12 +95,48 @@
               </div>
               <div id="nt-settings-shortcut-hint" class="nt-settings-capture-hint" hidden></div>
             </div>
+
+            <div class="nt-settings-cell">
+              <div class="nt-settings-head">
+                <div class="nt-settings-name" data-i18n="settings.sources.name">搜索内容</div>
+                <div class="nt-settings-desc" data-i18n="settings.sources.desc">选择聚焦搜索聚合的来源，网页搜索始终开启</div>
+              </div>
+              <label class="nt-settings-toggle">
+                <span class="nt-settings-toggle-label" data-i18n="settings.sources.tab">标签页</span>
+                <input id="nt-settings-source-tab" type="checkbox" />
+                <span class="nt-switch" aria-hidden="true"></span>
+              </label>
+              <label class="nt-settings-toggle">
+                <span class="nt-settings-toggle-label" data-i18n="settings.sources.bookmark">书签</span>
+                <input id="nt-settings-source-bookmark" type="checkbox" />
+                <span class="nt-switch" aria-hidden="true"></span>
+              </label>
+              <label class="nt-settings-toggle">
+                <span class="nt-settings-toggle-label" data-i18n="settings.sources.history">历史记录</span>
+                <input id="nt-settings-source-history" type="checkbox" />
+                <span class="nt-switch" aria-hidden="true"></span>
+              </label>
+            </div>
+
+            <div class="nt-settings-cell">
+              <div class="nt-settings-row">
+                <div class="nt-settings-head">
+                  <div class="nt-settings-name" data-i18n="settings.language.name">语言</div>
+                  <div class="nt-settings-desc" data-i18n="settings.language.desc">新标签页与搜索浮层的界面语言</div>
+                </div>
+                <div id="nt-settings-language" class="nt-segmented" role="radiogroup" aria-label="语言" data-i18n-aria="settings.language.name">
+                  <span class="nt-segmented-pill"></span>
+                  <button type="button" role="radio" data-lang="zh" aria-checked="true">中文</button>
+                  <button type="button" role="radio" data-lang="en" aria-checked="false">English</button>
+                </div>
+              </div>
+            </div>
           </section>
 
           <section class="nt-settings-section" data-section="shortcuts" hidden>
             <div class="nt-settings-head nt-settings-head-row">
               <div class="nt-settings-head-text">
-                <div class="nt-settings-name" data-i18n="settings.shortcuts.name">快捷入口</div>
+                <div class="nt-settings-name" data-i18n="settings.shortcuts.name">快速入口</div>
                 <div class="nt-settings-desc" data-i18n="settings.shortcuts.desc">展示在新标签页宫格中的常用网站</div>
               </div>
               <button id="nt-settings-add" type="button" class="nt-btn nt-settings-add" data-i18n="settings.shortcuts.add">+ 添加</button>
@@ -145,26 +152,46 @@
             <div id="nt-settings-list" class="nt-settings-list"></div>
           </section>
 
-          <section class="nt-settings-section" data-section="sources" hidden>
-            <div class="nt-settings-head">
-              <div class="nt-settings-name" data-i18n="settings.sources.name">搜索内容</div>
-              <div class="nt-settings-desc" data-i18n="settings.sources.desc">选择聚焦搜索聚合的来源，网页搜索始终开启</div>
+          <section class="nt-settings-section" data-section="appearance" hidden>
+            <div class="nt-settings-cell">
+              <div class="nt-settings-row">
+                <div class="nt-settings-head">
+                  <div class="nt-settings-name" data-i18n="settings.theme.name">主题</div>
+                  <div class="nt-settings-desc" data-i18n="settings.theme.desc">新标签页与搜索浮层的亮暗外观</div>
+                </div>
+                <div id="nt-settings-theme" class="nt-segmented" role="radiogroup" aria-label="主题" data-i18n-aria="settings.theme.name">
+                  <span class="nt-segmented-pill"></span>
+                  <button type="button" role="radio" data-theme="system" aria-checked="true" data-i18n="settings.theme.system">跟随浏览器</button>
+                  <button type="button" role="radio" data-theme="light" aria-checked="false" data-i18n="settings.theme.light">亮色</button>
+                  <button type="button" role="radio" data-theme="dark" aria-checked="false" data-i18n="settings.theme.dark">暗色</button>
+                </div>
+              </div>
             </div>
-            <label class="nt-settings-toggle">
-              <span class="nt-settings-toggle-label" data-i18n="settings.sources.tab">标签页</span>
-              <input id="nt-settings-source-tab" type="checkbox" />
-              <span class="nt-switch" aria-hidden="true"></span>
-            </label>
-            <label class="nt-settings-toggle">
-              <span class="nt-settings-toggle-label" data-i18n="settings.sources.bookmark">书签</span>
-              <input id="nt-settings-source-bookmark" type="checkbox" />
-              <span class="nt-switch" aria-hidden="true"></span>
-            </label>
-            <label class="nt-settings-toggle">
-              <span class="nt-settings-toggle-label" data-i18n="settings.sources.history">历史记录</span>
-              <input id="nt-settings-source-history" type="checkbox" />
-              <span class="nt-switch" aria-hidden="true"></span>
-            </label>
+
+            <div class="nt-settings-cell">
+              <div class="nt-settings-head">
+                <div class="nt-settings-name" data-i18n="settings.style.name">样式</div>
+                <div class="nt-settings-desc" data-i18n="settings.style.desc">新标签页与搜索浮层的视觉风格</div>
+              </div>
+              <div id="nt-settings-style" class="nt-style-grid" role="radiogroup" aria-label="样式" data-i18n-aria="settings.style.name">
+                <button type="button" role="radio" class="nt-style-card is-active" data-style="acrylic" aria-checked="true">
+                  <img class="nt-style-card-img" src="../../assets/style-acrylic.jpg" alt="" />
+                  <span class="nt-style-card-label" data-i18n="settings.style.acrylic">亚克力</span>
+                </button>
+                <button type="button" role="radio" class="nt-style-card" data-style="neutral" aria-checked="false">
+                  <img class="nt-style-card-img" src="../../assets/style-neutral.jpg" alt="" />
+                  <span class="nt-style-card-label" data-i18n="settings.style.neutral">简约黑白</span>
+                </button>
+                <button type="button" role="radio" class="nt-style-card" data-style="paper" aria-checked="false">
+                  <img class="nt-style-card-img" src="../../assets/style-paper.jpg" alt="" />
+                  <span class="nt-style-card-label" data-i18n="settings.style.paper">牛皮纸</span>
+                </button>
+                <button type="button" role="radio" class="nt-style-card" data-style="pink" aria-checked="false">
+                  <img class="nt-style-card-img" src="../../assets/style-pink.jpg" alt="" />
+                  <span class="nt-style-card-label" data-i18n="settings.style.pink">少女粉</span>
+                </button>
+              </div>
+            </div>
           </section>
         </div>
       </div>

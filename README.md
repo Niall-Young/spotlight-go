@@ -68,12 +68,12 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 * **Centered Search Card**: Auto-focused search input with a subtle light-blue animated sweep border.
 * **Shared Results Panel**: Features the same fast, grouped search results experience as the overlay.
 * **Customizable Shortcut Grid**: Responsive grid layout that auto-adapts column counts, shows at most two rows with centered prev/next pager arrows when shortcuts overflow, supports drag-and-drop reordering with live drop-target preview, and extracts high-resolution site favicons.
-* **Floating Settings Modal**: A bottom-right FAB opens a three-section settings modal — pick a theme (system / light / dark) and UI language (中文 / English), press-to-capture a custom overlay hotkey, manage quick-launch shortcuts as inline cards, and toggle search sources (tabs / bookmarks / history).
+* **Floating Settings Modal**: A bottom-right FAB opens a three-section settings modal — **General** (press-to-capture a custom overlay hotkey, toggle search sources: tabs / bookmarks / history, and UI language 中文 / English), **Quick Links** (manage quick-launch shortcuts as inline cards), and **Appearance** (theme: system / light / dark, plus four visual styles — Acrylic, Neutral, Paper, Pink — applied to both the new tab page and the search overlay).
 * **Bilingual Interface**: Full Chinese / English UI across the new tab page and search overlay — defaults to the browser language (non-Chinese falls back to English) and can be switched manually in Settings → General.
 * **Right-Click Context Menu**: Right-click any shortcut tile to edit the URL/title, delete it, or open it in a new background tab.
 
 ### 🎨 Pure Design & Technical Elegance
-* **Monochrome Frosted Glass**: Apple-inspired aesthetic with `backdrop-filter` blur, dark/light theme switching automatically matching your system preferences.
+* **Monochrome Frosted Glass**: Apple-inspired aesthetic with `backdrop-filter` blur, dark/light theme switching automatically matching your system preferences, plus four optional visual styles (Acrylic / Neutral / Paper / Pink).
 * **Complete CSS Isolation**: The overlay is injected into host pages using a **closed Shadow DOM**, completely preventing style leaks or host page CSS interference.
 * **Zero Dependencies & Zero Build**: 100% native HTML, CSS, and modern JavaScript. No npm packages, no bundlers, no build delay.
 

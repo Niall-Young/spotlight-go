@@ -3,6 +3,7 @@
 
   const CUSTOM_SHORTCUT_KEY = 'customShortcut';
   const THEME_KEY = 'themeMode';
+  const STYLE_KEY = 'styleMode';
 
   let host = null;
   let shadow = null;
@@ -15,6 +16,7 @@
   let pendingKeys = null;
   let trigger = null;
   let themeMode = 'system';
+  let styleMode = 'acrylic';
 
   // 主题：system（跟随浏览器）/ light / dark，作用于浮层的 data-sg-theme 属性
   function applyTheme() {
@@ -23,12 +25,25 @@
     else maskEl.dataset.sgTheme = themeMode;
   }
 
+  // 样式：acrylic（默认）/ neutral / paper / pink，作用于浮层的 data-sg-style 属性
+  function normalizeStyle(mode) {
+    return mode === 'neutral' || mode === 'paper' || mode === 'pink' ? mode : 'acrylic';
+  }
+
+  function applyStyle() {
+    if (!maskEl) return;
+    if (styleMode === 'acrylic') delete maskEl.dataset.sgStyle;
+    else maskEl.dataset.sgStyle = styleMode;
+  }
+
   try {
-    chrome.storage.local.get(THEME_KEY, (data) => {
+    chrome.storage.local.get([THEME_KEY, STYLE_KEY], (data) => {
       if (chrome.runtime.lastError) return;
       const mode = data[THEME_KEY];
       themeMode = mode === 'light' || mode === 'dark' ? mode : 'system';
       applyTheme();
+      styleMode = normalizeStyle(data[STYLE_KEY]);
+      applyStyle();
     });
   } catch (_) {
     /* 忽略：上下文失效 */
@@ -186,6 +201,10 @@
         const mode = changes[THEME_KEY].newValue;
         themeMode = mode === 'light' || mode === 'dark' ? mode : 'system';
         applyTheme();
+      }
+      if (STYLE_KEY in changes) {
+        styleMode = normalizeStyle(changes[STYLE_KEY].newValue);
+        applyStyle();
       }
     });
   } catch (_) {
@@ -391,6 +410,7 @@
     mask.className = 'sg-overlay-mask';
     maskEl = mask;
     applyTheme();
+    applyStyle();
     mask.addEventListener('mousedown', (event) => {
       if (event.target === mask) closeOverlay();
     });

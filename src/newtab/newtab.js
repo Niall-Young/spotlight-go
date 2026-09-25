@@ -5,6 +5,7 @@
   const CUSTOM_SHORTCUT_KEY = 'customShortcut';
   const SOURCES_KEY = 'searchSources';
   const THEME_KEY = 'themeMode';
+  const STYLE_KEY = 'styleMode';
   const DEFAULT_SOURCES = { tab: true, bookmark: true, history: true };
 
   const i18n = window.SpotlightI18n;
@@ -61,6 +62,31 @@
     themeSegmented.render(mode);
   }
 
+  // ---------- 样式 ----------
+
+  // styleMode：acrylic（默认）/ neutral / paper / pink；
+  // 通过 <html data-style> 叠加在主题之上，覆盖对应的 CSS 变量与背景
+  function normalizeStyle(mode) {
+    return mode === 'neutral' || mode === 'paper' || mode === 'pink' ? mode : 'acrylic';
+  }
+
+  function applyStyle(mode) {
+    if (mode === 'acrylic') delete document.documentElement.dataset.style;
+    else document.documentElement.dataset.style = mode;
+  }
+
+  const styleCards = Array.from(
+    document.querySelectorAll('#nt-settings-style button[data-style]')
+  );
+
+  function renderStyle(mode) {
+    for (const btn of styleCards) {
+      const active = btn.dataset.style === mode;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-checked', String(active));
+    }
+  }
+
   // ---------- 语言 ----------
 
   // languageMode：zh / en；缺省或旧版 system 值按浏览器语言解析，非中文一律英文
@@ -92,12 +118,15 @@
     }
   }
 
-  // 尽早读取并应用主题/语言，尽量减少首屏闪烁
-  chrome.storage.local.get([THEME_KEY, LANG_KEY], (data) => {
+  // 尽早读取并应用主题/样式/语言，尽量减少首屏闪烁
+  chrome.storage.local.get([THEME_KEY, STYLE_KEY, LANG_KEY], (data) => {
     if (chrome.runtime.lastError) return;
     const mode = normalizeTheme(data[THEME_KEY]);
     applyTheme(mode);
     renderTheme(mode);
+    const style = normalizeStyle(data[STYLE_KEY]);
+    applyStyle(style);
+    renderStyle(style);
     renderLang(normalizeLang(data[LANG_KEY]));
   });
 
@@ -107,6 +136,11 @@
       const mode = normalizeTheme(changes[THEME_KEY].newValue);
       applyTheme(mode);
       renderTheme(mode);
+    }
+    if (STYLE_KEY in changes) {
+      const style = normalizeStyle(changes[STYLE_KEY].newValue);
+      applyStyle(style);
+      renderStyle(style);
     }
     if (LANG_KEY in changes) {
       renderLang(normalizeLang(changes[LANG_KEY].newValue));
@@ -137,6 +171,13 @@
     if (!btn) return;
     // 只需写入 storage：onChanged 更新分段选中态，i18n 回调刷新全部文案
     chrome.storage.local.set({ [LANG_KEY]: normalizeLang(btn.dataset.lang) });
+  });
+
+  // 只需写入 storage：onChanged 统一应用样式并刷新卡片选中态
+  document.getElementById('nt-settings-style').addEventListener('click', (event) => {
+    const btn = event.target.closest('button[data-style]');
+    if (!btn) return;
+    chrome.storage.local.set({ [STYLE_KEY]: normalizeStyle(btn.dataset.style) });
   });
 
   const input = document.getElementById('nt-input');
@@ -616,7 +657,7 @@
 
   // ---------- 设置弹窗：打开/关闭 ----------
 
-  // 左侧菜单：通用 / 快捷入口 / 搜索内容，一次只展示一个分区
+  // 左侧菜单：通用 / 快速入口 / 外观，一次只展示一个分区
   const settingsNavItems = Array.from(
     settingsMask.querySelectorAll('.nt-settings-nav-item')
   );
@@ -651,7 +692,7 @@
     stopCapture();
     closeForm();
     settingsMask.hidden = false;
-    // 从宫格右键「编辑」进入时直达快捷入口分区；
+    // 从宫格右键「编辑」进入时直达快速入口分区；
     // 须在弹窗可见后调用，滑块才能测到菜单项位置
     showSettingsSection(editEntry ? 'shortcuts' : 'general');
     refreshShortcutLabel();
@@ -672,12 +713,12 @@
     if (event.target === settingsMask) closeSettings();
   });
 
-  // ---------- 快捷入口：卡片列表 + 内联表单 ----------
+  // ---------- 快速入口：卡片列表 + 内联表单 ----------
 
   // formEntry：undefined = 表单关闭；null = 新增；entry 对象 = 编辑该项
   let formEntry;
 
-  // 设置弹窗内的快捷入口列表：新增/编辑/删除在此完成，保存后同步刷新外面宫格
+  // 设置弹窗内的快速入口列表：新增/编辑/删除在此完成，保存后同步刷新外面宫格
   async function renderSettingsList() {
     const shortcuts = await loadShortcuts();
     settingsList.textContent = '';
@@ -838,7 +879,7 @@
   let menuEntry = null;
 
   // 语言切换时刷新动态生成的文案：内联表单按钮、快捷键录入占位、
-  // 快捷入口列表与结果面板（静态元素由 applyTranslations 处理）
+  // 快速入口列表与结果面板（静态元素由 applyTranslations 处理）
   function refreshDynamicTexts() {
     if (formEntry !== undefined) {
       settingsFormOk.textContent = formEntry ? i18n.t('common.save') : i18n.t('common.add');
