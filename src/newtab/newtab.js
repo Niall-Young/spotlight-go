@@ -7,6 +7,41 @@
   const THEME_KEY = 'themeMode';
   const DEFAULT_SOURCES = { tab: true, bookmark: true, history: true };
 
+  const i18n = window.SpotlightI18n;
+  const LANG_KEY = i18n.STORAGE_KEY;
+
+  // ---------- 分段选择器（主题 / 语言共用） ----------
+
+  // 滑块按激活按钮实际位置/宽度平移；面板隐藏时测不到布局则跳过，
+  // 待设置弹窗打开后由 showSettingsSection 再次定位
+  function setupSegmented(groupEl, attr) {
+    const buttons = Array.from(groupEl.querySelectorAll('button[data-' + attr + ']'));
+    const pill = groupEl.querySelector('.nt-segmented-pill');
+
+    function positionPill(animate) {
+      const active = buttons.find((btn) => btn.classList.contains('is-active'));
+      if (!active || !pill || active.offsetWidth === 0) return;
+      if (!animate) pill.classList.add('is-instant');
+      pill.style.width = active.offsetWidth + 'px';
+      pill.style.transform = 'translateX(' + active.offsetLeft + 'px)';
+      if (!animate) {
+        void pill.offsetWidth; // 强制 reflow，避免下次切换把初始定位也算进过渡
+        pill.classList.remove('is-instant');
+      }
+    }
+
+    function render(value) {
+      for (const btn of buttons) {
+        const active = btn.dataset[attr] === value;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-checked', String(active));
+      }
+      positionPill(true);
+    }
+
+    return { positionPill, render };
+  }
+
   // ---------- 主题 ----------
 
   // themeMode：system（默认，跟随浏览器）/ light / dark；
@@ -20,49 +55,73 @@
     else document.documentElement.dataset.theme = mode;
   }
 
-  const themeGroup = document.getElementById('nt-settings-theme');
-  const themeButtons = Array.from(themeGroup.querySelectorAll('button[data-theme]'));
-  const themePill = themeGroup.querySelector('.nt-segmented-pill');
-
-  // 滑块按激活按钮实际位置/宽度平移；面板隐藏时测不到布局则跳过，
-  // 待设置弹窗打开后由 showSettingsSection 再次定位
-  function positionThemePill(animate) {
-    const active = themeButtons.find((btn) => btn.classList.contains('is-active'));
-    if (!active || !themePill || active.offsetWidth === 0) return;
-    if (!animate) themePill.classList.add('is-instant');
-    themePill.style.width = active.offsetWidth + 'px';
-    themePill.style.transform = 'translateX(' + active.offsetLeft + 'px)';
-    if (!animate) {
-      void themePill.offsetWidth; // 强制 reflow，避免下次切换把初始定位也算进过渡
-      themePill.classList.remove('is-instant');
-    }
-  }
+  const themeSegmented = setupSegmented(document.getElementById('nt-settings-theme'), 'theme');
 
   function renderTheme(mode) {
-    for (const btn of themeButtons) {
-      const active = btn.dataset.theme === mode;
-      btn.classList.toggle('is-active', active);
-      btn.setAttribute('aria-checked', String(active));
-    }
-    positionThemePill(true);
+    themeSegmented.render(mode);
   }
 
-  // 尽早读取并应用主题，尽量减少首屏闪烁
-  chrome.storage.local.get(THEME_KEY, (data) => {
+  // ---------- 语言 ----------
+
+  // languageMode：system（默认，跟随浏览器语言）/ zh / en；实际文案由 i18n 模块解析
+  function normalizeLang(mode) {
+    return mode === 'zh' || mode === 'en' ? mode : 'system';
+  }
+
+  const langSegmented = setupSegmented(document.getElementById('nt-settings-language'), 'lang');
+
+  function renderLang(mode) {
+    langSegmented.render(mode);
+  }
+
+  // 翻译带 data-i18n* 标记的静态元素；动态生成的文案见 refreshDynamicTexts
+  function applyTranslations() {
+    document.documentElement.lang = i18n.getLang() === 'zh' ? 'zh-CN' : 'en';
+    for (const el of document.querySelectorAll('[data-i18n]')) {
+      el.textContent = i18n.t(el.dataset.i18n);
+    }
+    for (const el of document.querySelectorAll('[data-i18n-placeholder]')) {
+      el.placeholder = i18n.t(el.dataset.i18nPlaceholder);
+    }
+    for (const el of document.querySelectorAll('[data-i18n-aria]')) {
+      el.setAttribute('aria-label', i18n.t(el.dataset.i18nAria));
+    }
+    for (const el of document.querySelectorAll('[data-i18n-title]')) {
+      el.title = i18n.t(el.dataset.i18nTitle);
+    }
+  }
+
+  // 尽早读取并应用主题/语言，尽量减少首屏闪烁
+  chrome.storage.local.get([THEME_KEY, LANG_KEY], (data) => {
     if (chrome.runtime.lastError) return;
     const mode = normalizeTheme(data[THEME_KEY]);
     applyTheme(mode);
     renderTheme(mode);
+    renderLang(normalizeLang(data[LANG_KEY]));
   });
 
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== 'local' || !(THEME_KEY in changes)) return;
-    const mode = normalizeTheme(changes[THEME_KEY].newValue);
-    applyTheme(mode);
-    renderTheme(mode);
+    if (area !== 'local') return;
+    if (THEME_KEY in changes) {
+      const mode = normalizeTheme(changes[THEME_KEY].newValue);
+      applyTheme(mode);
+      renderTheme(mode);
+    }
+    if (LANG_KEY in changes) {
+      renderLang(normalizeLang(changes[LANG_KEY].newValue));
+    }
   });
 
-  themeGroup.addEventListener('click', (event) => {
+  // 语言实际生效（含 system 解析）由 i18n 模块通知：刷新静态文案、
+  // 动态文案与结果面板；按钮宽度变化后需重定位分段滑块
+  i18n.init(() => {
+    applyTranslations();
+    refreshDynamicTexts();
+    themeSegmented.positionPill(true);
+    langSegmented.positionPill(true);
+  });
+
+  document.getElementById('nt-settings-theme').addEventListener('click', (event) => {
     const btn = event.target.closest('button[data-theme]');
     if (!btn) return;
     const mode = normalizeTheme(btn.dataset.theme);
@@ -70,6 +129,13 @@
       applyTheme(mode);
       renderTheme(mode);
     });
+  });
+
+  document.getElementById('nt-settings-language').addEventListener('click', (event) => {
+    const btn = event.target.closest('button[data-lang]');
+    if (!btn) return;
+    // 只需写入 storage：onChanged 更新分段选中态，i18n 回调刷新全部文案
+    chrome.storage.local.set({ [LANG_KEY]: normalizeLang(btn.dataset.lang) });
   });
 
   const input = document.getElementById('nt-input');
@@ -429,9 +495,9 @@
         if (chrome.runtime.lastError || !capturing) return;
         const cmd = (commands || []).find((c) => c.name === 'show-search');
         if (cmd && cmd.shortcut) {
-          settingsShortcutHint.textContent =
-            `浏览器级快捷键 ${formatShortcutLabel(cmd.shortcut)} 会被 Chrome 直接拦截并触发唤起，无法在此录入；` +
-            '可在 chrome://extensions/shortcuts 修改或移除该绑定。';
+          settingsShortcutHint.textContent = i18n.t('settings.shortcut.browserHint', {
+            shortcut: formatShortcutLabel(cmd.shortcut)
+          });
           settingsShortcutHint.hidden = false;
         } else {
           settingsShortcutHint.hidden = true;
@@ -448,7 +514,7 @@
     settingsShortcutView.hidden = true;
     settingsShortcutCapture.hidden = false;
     settingsShortcutHint.hidden = true;
-    settingsShortcutPreview.textContent = '按下新的快捷键…';
+    settingsShortcutPreview.textContent = i18n.t('settings.shortcut.press');
     settingsShortcutPreview.classList.remove('nt-kbd-ready');
     settingsShortcutSave.disabled = true;
     setCaptureFlag(true);
@@ -571,8 +637,9 @@
       settingsNavPill.style.height = active.offsetHeight + 'px';
       settingsNavPill.style.transform = 'translateY(' + active.offsetTop + 'px)';
     }
-    // 主题分段滑块在面板可见后才能测到布局，这里补齐初始定位（不做过渡）
-    positionThemePill(false);
+    // 主题/语言分段滑块在面板可见后才能测到布局，这里补齐初始定位（不做过渡）
+    themeSegmented.positionPill(false);
+    langSegmented.positionPill(false);
   }
 
   for (const item of settingsNavItems) {
@@ -617,7 +684,7 @@
     if (entries.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'nt-settings-empty';
-      empty.textContent = '暂无快捷方式';
+      empty.textContent = i18n.t('settings.shortcuts.empty');
       settingsList.appendChild(empty);
       return;
     }
@@ -653,14 +720,14 @@
     const edit = document.createElement('button');
     edit.type = 'button';
     edit.className = 'nt-settings-item-action';
-    edit.textContent = '编辑';
+    edit.textContent = i18n.t('common.edit');
     edit.addEventListener('click', () => openForm(entry, row));
     row.appendChild(edit);
 
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'nt-settings-item-action';
-    remove.textContent = '删除';
+    remove.textContent = i18n.t('common.delete');
     remove.addEventListener('click', async () => {
       if (formEntry && formEntry.url === entry.url) closeForm();
       const shortcuts = await loadShortcuts();
@@ -676,7 +743,7 @@
   // 内联表单：编辑时插入到对应卡片之后，新增时插入到列表顶部
   function openForm(entry, afterRow) {
     formEntry = entry || null;
-    settingsFormOk.textContent = formEntry ? '保存' : '添加';
+    settingsFormOk.textContent = formEntry ? i18n.t('common.save') : i18n.t('common.add');
     settingsFormUrl.value = formEntry ? formEntry.url : '';
     settingsFormTitle.value = formEntry ? formEntry.title || '' : '';
     settingsForm.hidden = false;
@@ -769,13 +836,26 @@
 
   let menuEntry = null;
 
+  // 语言切换时刷新动态生成的文案：内联表单按钮、快捷键录入占位、
+  // 快捷入口列表与结果面板（静态元素由 applyTranslations 处理）
+  function refreshDynamicTexts() {
+    if (formEntry !== undefined) {
+      settingsFormOk.textContent = formEntry ? i18n.t('common.save') : i18n.t('common.add');
+    }
+    if (!capturing) {
+      settingsShortcutPreview.textContent = i18n.t('settings.shortcut.press');
+    }
+    renderSettingsList();
+    panel.repaint();
+  }
+
   function showContextMenu(x, y, entry) {
     menuEntry = entry;
     contextMenu.textContent = '';
 
     const edit = document.createElement('button');
     edit.type = 'button';
-    edit.textContent = '编辑';
+    edit.textContent = i18n.t('common.edit');
     edit.addEventListener('click', () => {
       hideContextMenu();
       openSettings(entry);
@@ -784,7 +864,7 @@
 
     const remove = document.createElement('button');
     remove.type = 'button';
-    remove.textContent = '删除';
+    remove.textContent = i18n.t('common.delete');
     remove.addEventListener('click', async () => {
       hideContextMenu();
       const shortcuts = await loadShortcuts();
@@ -796,7 +876,7 @@
 
     const openNew = document.createElement('button');
     openNew.type = 'button';
-    openNew.textContent = '在新标签页打开';
+    openNew.textContent = i18n.t('common.openInNewTab');
     openNew.addEventListener('click', () => {
       hideContextMenu();
       chrome.tabs.create({ url: entry.url });

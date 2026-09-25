@@ -41,7 +41,7 @@ chrome.commands.onCommand.addListener((command) => {
 
 chrome.action.onClicked.addListener(() => showOverlay());
 
-const OVERLAY_SCRIPTS = ['src/shared/results-panel.js', 'src/overlay/overlay.js'];
+const OVERLAY_SCRIPTS = ['src/shared/i18n.js', 'src/shared/results-panel.js', 'src/overlay/overlay.js'];
 
 async function showOverlay() {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });

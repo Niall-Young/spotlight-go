@@ -34,7 +34,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["src/shared/results-panel.js", "src/overlay/overlay.js"],
+      "js": ["src/shared/i18n.js", "src/shared/results-panel.js", "src/overlay/overlay.js"],
       "run_at": "document_start"
     }
   ],

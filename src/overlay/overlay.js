@@ -34,6 +34,23 @@
     /* 忽略：上下文失效 */
   }
 
+  const i18n = window.SpotlightI18n;
+
+  // 语言切换时若浮层已打开，就地刷新文案与结果分组，无需重开
+  function applyLang() {
+    if (!shadow || !input) return;
+    input.placeholder = i18n.t('overlay.placeholder');
+    input.setAttribute('aria-label', i18n.t('app.name'));
+    const box = shadow.querySelector('.sg-overlay-panel');
+    if (box) box.setAttribute('aria-label', i18n.t('app.name'));
+    const esc = shadow.querySelector('.sg-overlay-esc');
+    if (esc) esc.textContent = i18n.t('overlay.esc');
+    if (panel) panel.repaint();
+    updateFooter(input.value.trim());
+  }
+
+  i18n.init(applyLang);
+
   function loadCss() {
     if (!cssPromise) {
       // 附加随机参数防止扩展重载后 fetch 命中 HTTP 缓存里的旧 CSS
@@ -284,9 +301,9 @@
     if (!footer) return;
     footer.textContent = query
       ? panel.hasItems()
-        ? 'Tab 选择 · Enter 打开'
-        : `Enter 搜索 “${query}”`
-      : '输入以搜索标签页、书签、历史与网页';
+        ? i18n.t('overlay.footerSelect')
+        : i18n.t('overlay.footerSearch', { query })
+      : i18n.t('overlay.footerIdle');
   }
 
   function openDirectSearch(query) {
@@ -381,7 +398,7 @@
     const box = document.createElement('div');
     box.className = 'sg-overlay-panel';
     box.setAttribute('role', 'dialog');
-    box.setAttribute('aria-label', '聚焦搜索');
+    box.setAttribute('aria-label', i18n.t('app.name'));
 
     const header = document.createElement('div');
     header.className = 'sg-overlay-header';
@@ -391,8 +408,8 @@
     input = document.createElement('input');
     input.type = 'text';
     input.className = 'sg-overlay-input';
-    input.placeholder = '搜索标签页、书签、历史与网页…';
-    input.setAttribute('aria-label', '聚焦搜索');
+    input.placeholder = i18n.t('overlay.placeholder');
+    input.setAttribute('aria-label', i18n.t('app.name'));
     input.spellcheck = false;
     input.autocomplete = 'off';
     input.addEventListener('input', onInput);
@@ -415,7 +432,7 @@
     footer.appendChild(footerText);
     const esc = document.createElement('span');
     esc.className = 'sg-overlay-esc';
-    esc.textContent = 'Esc 关闭';
+    esc.textContent = i18n.t('overlay.esc');
     footer.appendChild(esc);
 
     box.appendChild(header);

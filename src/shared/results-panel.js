@@ -2,12 +2,18 @@
   'use strict';
 
   const GROUP_ORDER = ['tab', 'bookmark', 'history', 'suggestion'];
+  // 分组名与操作提示在渲染时按当前语言取值，语言切换后由 repaint 重绘
   const GROUP_META = {
-    suggestion: { label: '搜索建议', hint: '搜索' },
-    tab: { label: '标签页', hint: '切换' },
-    bookmark: { label: '书签', hint: '打开' },
-    history: { label: '历史', hint: '打开' }
+    suggestion: { labelKey: 'group.suggestion', hintKey: 'hint.suggestion' },
+    tab: { labelKey: 'group.tab', hintKey: 'hint.tab' },
+    bookmark: { labelKey: 'group.bookmark', hintKey: 'hint.open' },
+    history: { labelKey: 'group.history', hintKey: 'hint.open' }
   };
+
+  function t(key) {
+    const i18n = typeof window !== 'undefined' ? window.SpotlightI18n : null;
+    return i18n ? i18n.t(key) : key;
+  }
 
   function faviconUrl(pageUrl) {
     return chrome.runtime.getURL(
@@ -109,7 +115,9 @@
 
       const hint = document.createElement('div');
       hint.className = 'sg-item-hint';
-      hint.textContent = (GROUP_META[item.group] || {}).hint || '';
+      hint.textContent = (GROUP_META[item.group] || {}).hintKey
+        ? t(GROUP_META[item.group].hintKey)
+        : '';
       el.appendChild(hint);
 
       el.addEventListener('mousemove', () => setSelected(index, false));
@@ -150,7 +158,8 @@
         groupEl.className = 'sg-group';
         const label = document.createElement('div');
         label.className = 'sg-group-title';
-        label.textContent = (GROUP_META[group] || {}).label || group;
+        const meta = GROUP_META[group] || {};
+        label.textContent = meta.labelKey ? t(meta.labelKey) : group;
         groupEl.appendChild(label);
         for (const item of list) {
           const normalized = Object.assign({}, item, { group });
@@ -181,9 +190,15 @@
       return items.length > 0;
     }
 
+    // 语言切换后按已有分组数据重绘，无需重新搜索
+    function repaint() {
+      paint(currentQuery);
+    }
+
     return {
       render,
       mergeGroups,
+      repaint,
       clear,
       hasItems,
       getSelected,

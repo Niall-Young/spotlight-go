@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>新标签页</title>
+  <title data-i18n="newtab.title">新标签页</title>
   <link rel="stylesheet" href="../shared/results-panel.css" />
   <link rel="stylesheet" href="newtab.css" />
 </head>
@@ -20,7 +20,8 @@
             <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
           </svg>
           <input id="nt-input" class="nt-input" type="text" autofocus spellcheck="false"
-                 autocomplete="off" placeholder="搜索或输入网址…" aria-label="聚焦搜索" />
+                 autocomplete="off" placeholder="搜索或输入网址…" aria-label="聚焦搜索"
+                 data-i18n-placeholder="newtab.searchPlaceholder" data-i18n-aria="app.name" />
         </div>
       </div>
       <!-- 结果弹出层不能嵌在磨砂卡片内：祖先的 backdrop-filter 会成为 Backdrop Root，导致子级 backdrop-filter 失效 -->
@@ -32,13 +33,13 @@
         <div id="nt-grid-track" class="nt-grid-track"></div>
       </div>
       <div id="nt-grid-pager" class="nt-grid-pager" hidden>
-        <button id="nt-grid-prev" class="nt-grid-nav" type="button" aria-label="上一页">
+        <button id="nt-grid-prev" class="nt-grid-nav" type="button" aria-label="上一页" data-i18n-aria="newtab.gridPrev">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M15 18l-6-6 6-6"></path>
           </svg>
         </button>
-        <button id="nt-grid-next" class="nt-grid-nav" type="button" aria-label="下一页">
+        <button id="nt-grid-next" class="nt-grid-nav" type="button" aria-label="下一页" data-i18n-aria="newtab.gridNext">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9 6l6 6-6 6"></path>
@@ -49,7 +50,8 @@
   </main>
 
   <button id="nt-settings-fab" class="nt-settings-fab" type="button" title="设置"
-          aria-label="设置" aria-haspopup="dialog">
+          aria-label="设置" aria-haspopup="dialog"
+          data-i18n-title="settings.title" data-i18n-aria="settings.title">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="3"></circle>
@@ -60,15 +62,15 @@
   <div id="nt-context-menu" class="nt-context-menu" hidden></div>
 
   <div id="nt-settings-mask" class="nt-modal-mask" hidden>
-    <div class="nt-modal nt-settings" role="dialog" aria-label="设置">
-      <div class="nt-modal-title">设置</div>
+    <div class="nt-modal nt-settings" role="dialog" aria-label="设置" data-i18n-aria="settings.title">
+      <div class="nt-modal-title" data-i18n="settings.title">设置</div>
 
       <div class="nt-settings-body">
-        <nav class="nt-settings-nav" aria-label="设置分类">
+        <nav class="nt-settings-nav" aria-label="设置分类" data-i18n-aria="settings.title">
           <div class="nt-settings-nav-pill" aria-hidden="true"></div>
-          <button type="button" class="nt-settings-nav-item is-active" data-section="general">通用</button>
-          <button type="button" class="nt-settings-nav-item" data-section="shortcuts">快捷入口</button>
-          <button type="button" class="nt-settings-nav-item" data-section="sources">搜索内容</button>
+          <button type="button" class="nt-settings-nav-item is-active" data-section="general" data-i18n="settings.nav.general">通用</button>
+          <button type="button" class="nt-settings-nav-item" data-section="shortcuts" data-i18n="settings.nav.shortcuts">快捷入口</button>
+          <button type="button" class="nt-settings-nav-item" data-section="sources" data-i18n="settings.nav.sources">搜索内容</button>
         </nav>
 
         <div class="nt-settings-content">
@@ -76,14 +78,14 @@
             <div class="nt-settings-cell">
               <div class="nt-settings-row">
                 <div class="nt-settings-head">
-                  <div class="nt-settings-name">主题</div>
-                  <div class="nt-settings-desc">新标签页与搜索浮层的外观</div>
+                  <div class="nt-settings-name" data-i18n="settings.theme.name">主题</div>
+                  <div class="nt-settings-desc" data-i18n="settings.theme.desc">新标签页与搜索浮层的外观</div>
                 </div>
-                <div id="nt-settings-theme" class="nt-segmented" role="radiogroup" aria-label="主题">
+                <div id="nt-settings-theme" class="nt-segmented" role="radiogroup" aria-label="主题" data-i18n-aria="settings.theme.name">
                   <span class="nt-segmented-pill"></span>
-                  <button type="button" role="radio" data-theme="system" aria-checked="true">跟随浏览器</button>
-                  <button type="button" role="radio" data-theme="light" aria-checked="false">亮色</button>
-                  <button type="button" role="radio" data-theme="dark" aria-checked="false">暗色</button>
+                  <button type="button" role="radio" data-theme="system" aria-checked="true" data-i18n="settings.theme.system">跟随浏览器</button>
+                  <button type="button" role="radio" data-theme="light" aria-checked="false" data-i18n="settings.theme.light">亮色</button>
+                  <button type="button" role="radio" data-theme="dark" aria-checked="false" data-i18n="settings.theme.dark">暗色</button>
                 </div>
               </div>
             </div>
@@ -91,18 +93,33 @@
             <div class="nt-settings-cell">
               <div class="nt-settings-row">
                 <div class="nt-settings-head">
-                  <div class="nt-settings-name">快捷键</div>
-                  <div class="nt-settings-desc">在普通页面唤起聚焦搜索</div>
+                  <div class="nt-settings-name" data-i18n="settings.language.name">语言</div>
+                  <div class="nt-settings-desc" data-i18n="settings.language.desc">新标签页与搜索浮层的界面语言</div>
+                </div>
+                <div id="nt-settings-language" class="nt-segmented" role="radiogroup" aria-label="语言" data-i18n-aria="settings.language.name">
+                  <span class="nt-segmented-pill"></span>
+                  <button type="button" role="radio" data-lang="system" aria-checked="true" data-i18n="settings.language.system">跟随系统</button>
+                  <button type="button" role="radio" data-lang="zh" aria-checked="false">中文</button>
+                  <button type="button" role="radio" data-lang="en" aria-checked="false">English</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="nt-settings-cell">
+              <div class="nt-settings-row">
+                <div class="nt-settings-head">
+                  <div class="nt-settings-name" data-i18n="settings.shortcut.name">快捷键</div>
+                  <div class="nt-settings-desc" data-i18n="settings.shortcut.desc">在普通页面唤起聚焦搜索</div>
                 </div>
                 <div id="nt-settings-shortcut-view" class="nt-settings-shortcut-view">
                   <kbd id="nt-settings-shortcut" class="nt-kbd">⌥ Space</kbd>
-                  <button id="nt-settings-shortcut-edit" type="button" class="nt-btn">更改</button>
+                  <button id="nt-settings-shortcut-edit" type="button" class="nt-btn" data-i18n="settings.shortcut.change">更改</button>
                 </div>
                 <div id="nt-settings-shortcut-capture" class="nt-settings-shortcut-capture" hidden>
-                  <kbd id="nt-settings-shortcut-preview" class="nt-kbd nt-kbd-capture">按下新的快捷键…</kbd>
+                  <kbd id="nt-settings-shortcut-preview" class="nt-kbd nt-kbd-capture" data-i18n="settings.shortcut.press">按下新的快捷键…</kbd>
                   <div class="nt-settings-capture-actions">
-                    <button id="nt-settings-shortcut-cancel" type="button" class="nt-btn">取消</button>
-                    <button id="nt-settings-shortcut-save" type="button" class="nt-btn nt-btn-primary" disabled>保存</button>
+                    <button id="nt-settings-shortcut-cancel" type="button" class="nt-btn" data-i18n="common.cancel">取消</button>
+                    <button id="nt-settings-shortcut-save" type="button" class="nt-btn nt-btn-primary" disabled data-i18n="common.save">保存</button>
                   </div>
                 </div>
               </div>
@@ -113,17 +130,17 @@
           <section class="nt-settings-section" data-section="shortcuts" hidden>
             <div class="nt-settings-head nt-settings-head-row">
               <div class="nt-settings-head-text">
-                <div class="nt-settings-name">快捷入口</div>
-                <div class="nt-settings-desc">展示在新标签页宫格中的常用网站</div>
+                <div class="nt-settings-name" data-i18n="settings.shortcuts.name">快捷入口</div>
+                <div class="nt-settings-desc" data-i18n="settings.shortcuts.desc">展示在新标签页宫格中的常用网站</div>
               </div>
-              <button id="nt-settings-add" type="button" class="nt-btn nt-settings-add">+ 添加</button>
+              <button id="nt-settings-add" type="button" class="nt-btn nt-settings-add" data-i18n="settings.shortcuts.add">+ 添加</button>
             </div>
             <div id="nt-settings-form" class="nt-settings-form" hidden>
-              <input id="nt-settings-form-url" type="url" placeholder="网址，如 https://example.com" spellcheck="false" />
-              <input id="nt-settings-form-title" type="text" placeholder="名称（可选）" spellcheck="false" />
+              <input id="nt-settings-form-url" type="url" placeholder="网址，如 https://example.com" spellcheck="false" data-i18n-placeholder="settings.shortcuts.formUrl" />
+              <input id="nt-settings-form-title" type="text" placeholder="名称（可选）" spellcheck="false" data-i18n-placeholder="settings.shortcuts.formTitle" />
               <div class="nt-settings-form-actions">
-                <button id="nt-settings-form-cancel" type="button" class="nt-btn">取消</button>
-                <button id="nt-settings-form-ok" type="button" class="nt-btn nt-btn-primary">保存</button>
+                <button id="nt-settings-form-cancel" type="button" class="nt-btn" data-i18n="common.cancel">取消</button>
+                <button id="nt-settings-form-ok" type="button" class="nt-btn nt-btn-primary" data-i18n="common.save">保存</button>
               </div>
             </div>
             <div id="nt-settings-list" class="nt-settings-list"></div>
@@ -131,21 +148,21 @@
 
           <section class="nt-settings-section" data-section="sources" hidden>
             <div class="nt-settings-head">
-              <div class="nt-settings-name">搜索内容</div>
-              <div class="nt-settings-desc">选择聚焦搜索聚合的来源，网页搜索始终开启</div>
+              <div class="nt-settings-name" data-i18n="settings.sources.name">搜索内容</div>
+              <div class="nt-settings-desc" data-i18n="settings.sources.desc">选择聚焦搜索聚合的来源，网页搜索始终开启</div>
             </div>
             <label class="nt-settings-toggle">
-              <span class="nt-settings-toggle-label">标签页</span>
+              <span class="nt-settings-toggle-label" data-i18n="settings.sources.tab">标签页</span>
               <input id="nt-settings-source-tab" type="checkbox" />
               <span class="nt-switch" aria-hidden="true"></span>
             </label>
             <label class="nt-settings-toggle">
-              <span class="nt-settings-toggle-label">书签</span>
+              <span class="nt-settings-toggle-label" data-i18n="settings.sources.bookmark">书签</span>
               <input id="nt-settings-source-bookmark" type="checkbox" />
               <span class="nt-switch" aria-hidden="true"></span>
             </label>
             <label class="nt-settings-toggle">
-              <span class="nt-settings-toggle-label">历史记录</span>
+              <span class="nt-settings-toggle-label" data-i18n="settings.sources.history">历史记录</span>
               <input id="nt-settings-source-history" type="checkbox" />
               <span class="nt-switch" aria-hidden="true"></span>
             </label>
@@ -154,11 +171,12 @@
       </div>
 
       <div class="nt-modal-actions">
-        <button id="nt-settings-close" type="button" class="nt-btn nt-btn-primary">完成</button>
+        <button id="nt-settings-close" type="button" class="nt-btn nt-btn-primary" data-i18n="common.done">完成</button>
       </div>
     </div>
   </div>
 
+  <script src="../shared/i18n.js"></script>
   <script src="../shared/results-panel.js"></script>
   <script src="newtab.js"></script>
 </body>
