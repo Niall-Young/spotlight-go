@@ -1396,6 +1396,12 @@ html[data-style="pink"][data-theme="dark"] body {
   background-image: none;
 }
 
+/* 分段选择器：暗色下选中滑块与弹出层同色，去掉投影 */
+html[data-style="pink"][data-theme="dark"] .nt-segmented-pill {
+  background: var(--nt-popover-bg);
+  box-shadow: none;
+}
+
 @media (prefers-color-scheme: dark) {
   html[data-style="pink"]:not([data-theme="light"]) {
     --sg-text: #fae9f1;
@@ -1418,5 +1424,10 @@ html[data-style="pink"][data-theme="dark"] body {
   html[data-style="pink"]:not([data-theme="light"]) body {
     background-color: #2a1822;
     background-image: none;
+  }
+
+  html[data-style="pink"]:not([data-theme="light"]) .nt-segmented-pill {
+    background: var(--nt-popover-bg);
+    box-shadow: none;
   }
 }
