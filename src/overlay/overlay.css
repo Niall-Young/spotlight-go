@@ -206,85 +206,90 @@
   }
 }
 
-/* ===== 样式：牛皮纸（paper）—— 暖米色调 ===== */
+/* ===== 样式：牛皮纸（paper）—— Claude 米白配色，纯色平面，无半透明、无模糊、无边框 ===== */
 
 .sg-overlay-mask[data-sg-style="paper"] {
-  --sg-text: #40372a;
-  --sg-text-secondary: rgba(64, 55, 42, 0.5);
-  --sg-selected-bg: rgba(64, 55, 42, 0.07);
-  --sg-mark-bg: rgba(64, 55, 42, 0.1);
-  --sg-divider: rgba(64, 55, 42, 0.09);
+  --sg-text: #141413;
+  --sg-text-secondary: rgba(20, 20, 19, 0.5);
+  --sg-selected-bg: rgba(20, 20, 19, 0.06);
+  --sg-mark-bg: rgba(20, 20, 19, 0.09);
+  --sg-divider: rgba(20, 20, 19, 0.08);
 }
 
 .sg-overlay-mask[data-sg-style="paper"] .sg-overlay-panel {
-  background: rgba(247, 240, 226, 0.72);
-  border-color: rgba(255, 252, 243, 0.65);
+  background: #faf9f5;
+  border-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 16px 40px rgba(20, 20, 19, 0.14),
+    0 2px 6px rgba(20, 20, 19, 0.06);
 }
 
 .sg-overlay-mask[data-sg-style="paper"] .sg-overlay-search-icon {
-  color: rgba(64, 55, 42, 0.4);
+  color: rgba(20, 20, 19, 0.4);
 }
 
 .sg-overlay-mask[data-sg-style="paper"] .sg-overlay-input::placeholder {
-  color: rgba(64, 55, 42, 0.32);
+  color: rgba(20, 20, 19, 0.32);
 }
 
 .sg-overlay-mask[data-sg-style="paper"] .sg-overlay-esc {
-  background: rgba(64, 55, 42, 0.06);
-  border-color: rgba(64, 55, 42, 0.1);
+  background: rgba(20, 20, 19, 0.06);
+  border-color: transparent;
 }
 
 .sg-overlay-mask[data-sg-style="paper"][data-sg-theme="dark"] {
-  --sg-text: #f0e8d8;
-  --sg-text-secondary: rgba(240, 232, 216, 0.48);
-  --sg-selected-bg: rgba(240, 232, 216, 0.09);
-  --sg-mark-bg: rgba(240, 232, 216, 0.13);
-  --sg-divider: rgba(240, 232, 216, 0.09);
+  --sg-text: #faf9f5;
+  --sg-text-secondary: rgba(250, 249, 245, 0.5);
+  --sg-selected-bg: rgba(250, 249, 245, 0.08);
+  --sg-mark-bg: rgba(250, 249, 245, 0.12);
+  --sg-divider: rgba(250, 249, 245, 0.08);
 }
 
 .sg-overlay-mask[data-sg-style="paper"][data-sg-theme="dark"] .sg-overlay-panel {
-  background: rgba(41, 34, 25, 0.78);
-  border-color: rgba(240, 232, 216, 0.12);
+  background: #262624;
+  border-color: transparent;
 }
 
 .sg-overlay-mask[data-sg-style="paper"][data-sg-theme="dark"] .sg-overlay-search-icon {
-  color: rgba(240, 232, 216, 0.4);
+  color: rgba(250, 249, 245, 0.4);
 }
 
 .sg-overlay-mask[data-sg-style="paper"][data-sg-theme="dark"] .sg-overlay-input::placeholder {
-  color: rgba(240, 232, 216, 0.3);
+  color: rgba(250, 249, 245, 0.3);
 }
 
 .sg-overlay-mask[data-sg-style="paper"][data-sg-theme="dark"] .sg-overlay-esc {
-  background: rgba(240, 232, 216, 0.09);
-  border-color: rgba(240, 232, 216, 0.12);
+  background: rgba(250, 249, 245, 0.08);
+  border-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
   .sg-overlay-mask[data-sg-style="paper"]:not([data-sg-theme="light"]) {
-    --sg-text: #f0e8d8;
-    --sg-text-secondary: rgba(240, 232, 216, 0.48);
-    --sg-selected-bg: rgba(240, 232, 216, 0.09);
-    --sg-mark-bg: rgba(240, 232, 216, 0.13);
-    --sg-divider: rgba(240, 232, 216, 0.09);
+    --sg-text: #faf9f5;
+    --sg-text-secondary: rgba(250, 249, 245, 0.5);
+    --sg-selected-bg: rgba(250, 249, 245, 0.08);
+    --sg-mark-bg: rgba(250, 249, 245, 0.12);
+    --sg-divider: rgba(250, 249, 245, 0.08);
   }
 
   .sg-overlay-mask[data-sg-style="paper"]:not([data-sg-theme="light"]) .sg-overlay-panel {
-    background: rgba(41, 34, 25, 0.78);
-    border-color: rgba(240, 232, 216, 0.12);
+    background: #262624;
+    border-color: transparent;
   }
 
   .sg-overlay-mask[data-sg-style="paper"]:not([data-sg-theme="light"]) .sg-overlay-search-icon {
-    color: rgba(240, 232, 216, 0.4);
+    color: rgba(250, 249, 245, 0.4);
   }
 
   .sg-overlay-mask[data-sg-style="paper"]:not([data-sg-theme="light"]) .sg-overlay-input::placeholder {
-    color: rgba(240, 232, 216, 0.3);
+    color: rgba(250, 249, 245, 0.3);
   }
 
   .sg-overlay-mask[data-sg-style="paper"]:not([data-sg-theme="light"]) .sg-overlay-esc {
-    background: rgba(240, 232, 216, 0.09);
-    border-color: rgba(240, 232, 216, 0.12);
+    background: rgba(250, 249, 245, 0.08);
+    border-color: transparent;
   }
 }
 
