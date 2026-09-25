@@ -1344,7 +1344,7 @@ html[data-style="pink"] .nt-tile {
   border-color: transparent;
 }
 
-/* 少女贴纸立绘：压在搜索卡片右上缘，轻微上下浮动 */
+/* 少女贴纸立绘：藏在搜索卡片之后、从卡片右上缘探出，避免遮挡输入文字，轻微上下浮动 */
 .nt-pink-deco {
   display: none;
 }
@@ -1352,7 +1352,8 @@ html[data-style="pink"] .nt-tile {
 html[data-style="pink"] .nt-pink-deco {
   display: block;
   position: absolute;
-  z-index: 3;
+  /* 负层级：贴纸在搜索卡片之下渲染，卡片背景压住贴纸下缘，输入文字不被遮挡 */
+  z-index: -1;
   right: -10px;
   top: -64px;
   width: min(96px, 18vw);
