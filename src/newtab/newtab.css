@@ -1301,12 +1301,12 @@ html[data-style="pink"] {
   --sg-divider: rgba(90, 54, 68, 0.08);
   --nt-glass-bg: #fff7fa;
   --nt-popover-bg: #fff7fa;
-  --nt-glass-border: #f5c6da;
+  --nt-glass-border: transparent;
   --nt-glass-shadow: 0 10px 30px rgba(214, 86, 132, 0.14), 0 2px 6px rgba(214, 86, 132, 0.08);
   --nt-glass-shadow-focus: 0 14px 36px rgba(214, 86, 132, 0.2), 0 2px 8px rgba(214, 86, 132, 0.1);
   --nt-tile-bg: #fff7fa;
   --nt-tile-border: #f5c6da;
-  --nt-tile-icon-bg: #ffe3ee;
+  --nt-tile-icon-bg: #ffffff;
   --nt-btn-bg: rgba(232, 90, 138, 0.1);
   --nt-btn-border: transparent;
   --nt-btn-primary-bg: #e85a8a;
@@ -1339,21 +1339,22 @@ html[data-style="pink"] .nt-search-card::before {
   display: none;
 }
 
-/* 左下角的少女贴纸立绘，轻微上下浮动 */
+/* 少女贴纸立绘：压在搜索卡片右上缘，轻微上下浮动 */
 .nt-pink-deco {
   display: none;
 }
 
 html[data-style="pink"] .nt-pink-deco {
   display: block;
-  position: fixed;
-  z-index: 0;
-  left: clamp(16px, 7vw, 120px);
-  bottom: 28px;
-  width: min(200px, 22vw);
+  position: absolute;
+  z-index: 3;
+  right: -10px;
+  top: -64px;
+  width: min(96px, 18vw);
   height: auto;
   pointer-events: none;
   user-select: none;
+  filter: drop-shadow(0 4px 10px rgba(214, 86, 132, 0.25));
   animation: nt-pink-deco-float 5s ease-in-out infinite;
 }
 

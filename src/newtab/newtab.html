@@ -26,6 +26,8 @@
       </div>
       <!-- 结果弹出层不能嵌在磨砂卡片内：祖先的 backdrop-filter 会成为 Backdrop Root，导致子级 backdrop-filter 失效 -->
       <div id="nt-results" class="sg-results nt-results" role="listbox"></div>
+      <!-- 少女粉样式的贴纸装饰，仅 data-style="pink" 时显示，压在搜索卡片右上缘 -->
+      <img class="nt-pink-deco" src="../../assets/pink-girl.png" alt="" aria-hidden="true" />
     </div>
 
     <div class="nt-grid-wrap">
@@ -48,9 +50,6 @@
       </div>
     </div>
   </main>
-
-  <!-- 少女粉样式的贴纸装饰，仅 data-style="pink" 时显示 -->
-  <img class="nt-pink-deco" src="../../assets/pink-girl.png" alt="" aria-hidden="true" />
 
   <button id="nt-settings-fab" class="nt-settings-fab" type="button" title="设置"
           aria-label="设置" aria-haspopup="dialog"
