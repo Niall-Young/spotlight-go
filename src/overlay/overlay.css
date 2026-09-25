@@ -31,6 +31,8 @@
 }
 
 .sg-overlay-panel {
+  /* 需要 position 让面板压在贴纸装饰（.sg-overlay-deco）之上，避免贴纸遮挡输入文字 */
+  position: relative;
   width: 100%;
   max-height: min(480px, 70vh);
   display: flex;
