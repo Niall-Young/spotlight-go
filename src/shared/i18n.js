@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  // languageMode：system（默认，跟随浏览器语言）/ zh / en；
+  // languageMode：zh / en；缺省或旧版 system 值按浏览器语言解析，非中文一律英文；
   // overlay 与新标签页共用，storage 变更后通过 init 回调即时切换
   const STORAGE_KEY = 'languageMode';
 
@@ -23,7 +23,6 @@
       'settings.theme.dark': '暗色',
       'settings.language.name': '语言',
       'settings.language.desc': '新标签页与搜索浮层的界面语言',
-      'settings.language.system': '跟随系统',
       'settings.shortcut.name': '快捷键',
       'settings.shortcut.desc': '在普通页面唤起聚焦搜索',
       'settings.shortcut.change': '更改',
@@ -79,7 +78,6 @@
       'settings.theme.dark': 'Dark',
       'settings.language.name': 'Language',
       'settings.language.desc': 'Language of the new tab page and search overlay',
-      'settings.language.system': 'System',
       'settings.shortcut.name': 'Shortcut',
       'settings.shortcut.desc': 'Invoke Spotlight Search on regular pages',
       'settings.shortcut.change': 'Change',

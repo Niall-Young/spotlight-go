@@ -63,9 +63,10 @@
 
   // ---------- 语言 ----------
 
-  // languageMode：system（默认，跟随浏览器语言）/ zh / en；实际文案由 i18n 模块解析
+  // languageMode：zh / en；缺省或旧版 system 值按浏览器语言解析，非中文一律英文
   function normalizeLang(mode) {
-    return mode === 'zh' || mode === 'en' ? mode : 'system';
+    if (mode === 'zh' || mode === 'en') return mode;
+    return (navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
   }
 
   const langSegmented = setupSegmented(document.getElementById('nt-settings-language'), 'lang');
@@ -112,7 +113,7 @@
     }
   });
 
-  // 语言实际生效（含 system 解析）由 i18n 模块通知：刷新静态文案、
+  // 语言实际生效（含浏览器语言解析）由 i18n 模块通知：刷新静态文案、
   // 动态文案与结果面板；按钮宽度变化后需重定位分段滑块
   i18n.init(() => {
     applyTranslations();

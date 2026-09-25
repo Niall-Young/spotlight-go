@@ -68,8 +68,8 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 * **Centered Search Card**: Auto-focused search input with a subtle light-blue animated sweep border.
 * **Shared Results Panel**: Features the same fast, grouped search results experience as the overlay.
 * **Customizable Shortcut Grid**: Responsive grid layout that auto-adapts column counts, shows at most two rows with centered prev/next pager arrows when shortcuts overflow, supports drag-and-drop reordering with live drop-target preview, and extracts high-resolution site favicons.
-* **Floating Settings Modal**: A bottom-right FAB opens a three-section settings modal — pick a theme (system / light / dark) and UI language (system / 中文 / English), press-to-capture a custom overlay hotkey, manage quick-launch shortcuts as inline cards, and toggle search sources (tabs / bookmarks / history).
-* **Bilingual Interface**: Full Chinese / English UI across the new tab page and search overlay — follows the browser language by default and can be switched manually in Settings → General.
+* **Floating Settings Modal**: A bottom-right FAB opens a three-section settings modal — pick a theme (system / light / dark) and UI language (中文 / English), press-to-capture a custom overlay hotkey, manage quick-launch shortcuts as inline cards, and toggle search sources (tabs / bookmarks / history).
+* **Bilingual Interface**: Full Chinese / English UI across the new tab page and search overlay — defaults to the browser language (non-Chinese falls back to English) and can be switched manually in Settings → General.
 * **Right-Click Context Menu**: Right-click any shortcut tile to edit the URL/title, delete it, or open it in a new background tab.
 
 ### 🎨 Pure Design & Technical Elegance
