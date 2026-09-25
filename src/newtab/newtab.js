@@ -4,7 +4,73 @@
   const SHORTCUTS_KEY = 'pinnedShortcuts';
   const CUSTOM_SHORTCUT_KEY = 'customShortcut';
   const SOURCES_KEY = 'searchSources';
+  const THEME_KEY = 'themeMode';
   const DEFAULT_SOURCES = { tab: true, bookmark: true, history: true };
+
+  // ---------- 主题 ----------
+
+  // themeMode：system（默认，跟随浏览器）/ light / dark；
+  // 显式亮暗通过 <html data-theme> 覆盖 prefers-color-scheme 媒体查询
+  function normalizeTheme(mode) {
+    return mode === 'light' || mode === 'dark' ? mode : 'system';
+  }
+
+  function applyTheme(mode) {
+    if (mode === 'system') delete document.documentElement.dataset.theme;
+    else document.documentElement.dataset.theme = mode;
+  }
+
+  const themeGroup = document.getElementById('nt-settings-theme');
+  const themeButtons = Array.from(themeGroup.querySelectorAll('button[data-theme]'));
+  const themePill = themeGroup.querySelector('.nt-segmented-pill');
+
+  // 滑块按激活按钮实际位置/宽度平移；面板隐藏时测不到布局则跳过，
+  // 待设置弹窗打开后由 showSettingsSection 再次定位
+  function positionThemePill(animate) {
+    const active = themeButtons.find((btn) => btn.classList.contains('is-active'));
+    if (!active || !themePill || active.offsetWidth === 0) return;
+    if (!animate) themePill.classList.add('is-instant');
+    themePill.style.width = active.offsetWidth + 'px';
+    themePill.style.transform = 'translateX(' + active.offsetLeft + 'px)';
+    if (!animate) {
+      void themePill.offsetWidth; // 强制 reflow，避免下次切换把初始定位也算进过渡
+      themePill.classList.remove('is-instant');
+    }
+  }
+
+  function renderTheme(mode) {
+    for (const btn of themeButtons) {
+      const active = btn.dataset.theme === mode;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-checked', String(active));
+    }
+    positionThemePill(true);
+  }
+
+  // 尽早读取并应用主题，尽量减少首屏闪烁
+  chrome.storage.local.get(THEME_KEY, (data) => {
+    if (chrome.runtime.lastError) return;
+    const mode = normalizeTheme(data[THEME_KEY]);
+    applyTheme(mode);
+    renderTheme(mode);
+  });
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local' || !(THEME_KEY in changes)) return;
+    const mode = normalizeTheme(changes[THEME_KEY].newValue);
+    applyTheme(mode);
+    renderTheme(mode);
+  });
+
+  themeGroup.addEventListener('click', (event) => {
+    const btn = event.target.closest('button[data-theme]');
+    if (!btn) return;
+    const mode = normalizeTheme(btn.dataset.theme);
+    chrome.storage.local.set({ [THEME_KEY]: mode }, () => {
+      applyTheme(mode);
+      renderTheme(mode);
+    });
+  });
 
   const input = document.getElementById('nt-input');
   const resultsEl = document.getElementById('nt-results');
@@ -483,13 +549,46 @@
 
   // ---------- 设置弹窗：打开/关闭 ----------
 
+  // 左侧菜单：通用 / 快捷入口 / 搜索内容，一次只展示一个分区
+  const settingsNavItems = Array.from(
+    settingsMask.querySelectorAll('.nt-settings-nav-item')
+  );
+  const settingsNavPill = settingsMask.querySelector('.nt-settings-nav-pill');
+  const settingsSections = Array.from(
+    settingsMask.querySelectorAll('.nt-settings-section')
+  );
+
+  function showSettingsSection(name) {
+    for (const item of settingsNavItems) {
+      item.classList.toggle('is-active', item.dataset.section === name);
+    }
+    for (const section of settingsSections) {
+      section.hidden = section.dataset.section !== name;
+    }
+    // 滑块按激活项实际位置/高度平移，避免依赖固定的行高假设
+    const active = settingsNavItems.find((item) => item.dataset.section === name);
+    if (active && settingsNavPill) {
+      settingsNavPill.style.height = active.offsetHeight + 'px';
+      settingsNavPill.style.transform = 'translateY(' + active.offsetTop + 'px)';
+    }
+    // 主题分段滑块在面板可见后才能测到布局，这里补齐初始定位（不做过渡）
+    positionThemePill(false);
+  }
+
+  for (const item of settingsNavItems) {
+    item.addEventListener('click', () => showSettingsSection(item.dataset.section));
+  }
+
   function openSettings(editEntry) {
     stopCapture();
     closeForm();
+    settingsMask.hidden = false;
+    // 从宫格右键「编辑」进入时直达快捷入口分区；
+    // 须在弹窗可见后调用，滑块才能测到菜单项位置
+    showSettingsSection(editEntry ? 'shortcuts' : 'general');
     refreshShortcutLabel();
     renderSources();
     renderSettingsList();
-    settingsMask.hidden = false;
     if (editEntry) openForm(editEntry);
   }
 
@@ -574,7 +673,7 @@
     return row;
   }
 
-  // 内联表单：编辑时插入到对应卡片之后，新增时追加到列表末尾
+  // 内联表单：编辑时插入到对应卡片之后，新增时插入到列表顶部
   function openForm(entry, afterRow) {
     formEntry = entry || null;
     settingsFormOk.textContent = formEntry ? '保存' : '添加';
@@ -583,7 +682,7 @@
     settingsForm.hidden = false;
     settingsAdd.hidden = true;
     if (afterRow) settingsList.insertBefore(settingsForm, afterRow.nextSibling);
-    else settingsList.appendChild(settingsForm);
+    else settingsList.insertBefore(settingsForm, settingsList.firstChild);
     settingsFormUrl.focus();
   }
 

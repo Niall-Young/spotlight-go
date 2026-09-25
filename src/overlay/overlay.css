@@ -21,6 +21,7 @@
   --sg-selected-bg: rgba(0, 0, 0, 0.06);
   --sg-mark-bg: rgba(0, 0, 0, 0.08);
   --sg-divider: rgba(0, 0, 0, 0.07);
+  color-scheme: light;
 }
 
 .sg-overlay-panel {
@@ -117,17 +118,19 @@
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* 深色模式 */
+/* 深色：跟随系统（未显式选择亮色）且系统为深色，或显式选择暗色。
+   主题由 overlay.js 按 themeMode 设置 mask 的 data-sg-theme 属性。 */
 @media (prefers-color-scheme: dark) {
-  .sg-overlay-mask {
+  .sg-overlay-mask:not([data-sg-theme="light"]) {
     --sg-text: #f2f2f3;
     --sg-text-secondary: rgba(255, 255, 255, 0.45);
     --sg-selected-bg: rgba(255, 255, 255, 0.08);
     --sg-mark-bg: rgba(255, 255, 255, 0.12);
     --sg-divider: rgba(255, 255, 255, 0.08);
+    color-scheme: dark;
   }
 
-  .sg-overlay-panel {
+  .sg-overlay-mask:not([data-sg-theme="light"]) .sg-overlay-panel {
     background: rgba(28, 28, 30, 0.66);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow:
@@ -135,16 +138,46 @@
       0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
-  .sg-overlay-search-icon {
+  .sg-overlay-mask:not([data-sg-theme="light"]) .sg-overlay-search-icon {
     color: rgba(255, 255, 255, 0.4);
   }
 
-  .sg-overlay-input::placeholder {
+  .sg-overlay-mask:not([data-sg-theme="light"]) .sg-overlay-input::placeholder {
     color: rgba(255, 255, 255, 0.3);
   }
 
-  .sg-overlay-esc {
+  .sg-overlay-mask:not([data-sg-theme="light"]) .sg-overlay-esc {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.1);
   }
+}
+
+.sg-overlay-mask[data-sg-theme="dark"] {
+  --sg-text: #f2f2f3;
+  --sg-text-secondary: rgba(255, 255, 255, 0.45);
+  --sg-selected-bg: rgba(255, 255, 255, 0.08);
+  --sg-mark-bg: rgba(255, 255, 255, 0.12);
+  --sg-divider: rgba(255, 255, 255, 0.08);
+  color-scheme: dark;
+}
+
+.sg-overlay-mask[data-sg-theme="dark"] .sg-overlay-panel {
+  background: rgba(28, 28, 30, 0.66);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.sg-overlay-mask[data-sg-theme="dark"] .sg-overlay-search-icon {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.sg-overlay-mask[data-sg-theme="dark"] .sg-overlay-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.sg-overlay-mask[data-sg-theme="dark"] .sg-overlay-esc {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
 }

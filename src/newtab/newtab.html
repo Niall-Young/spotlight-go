@@ -63,63 +63,95 @@
     <div class="nt-modal nt-settings" role="dialog" aria-label="设置">
       <div class="nt-modal-title">设置</div>
 
-      <section class="nt-settings-section">
-        <div class="nt-settings-head">
-          <div class="nt-settings-name">快捷键</div>
-          <div class="nt-settings-desc">在普通页面唤起聚焦搜索；chrome:// 等页面仍由浏览器默认快捷键唤起</div>
-        </div>
-        <div id="nt-settings-shortcut-view" class="nt-settings-shortcut-view">
-          <kbd id="nt-settings-shortcut" class="nt-kbd">⌥ Space</kbd>
-          <button id="nt-settings-shortcut-edit" type="button" class="nt-btn">更改</button>
-        </div>
-        <div id="nt-settings-shortcut-capture" class="nt-settings-shortcut-capture" hidden>
-          <kbd id="nt-settings-shortcut-preview" class="nt-kbd nt-kbd-capture">按下新的快捷键…</kbd>
-          <div class="nt-settings-capture-actions">
-            <button id="nt-settings-shortcut-cancel" type="button" class="nt-btn">取消</button>
-            <button id="nt-settings-shortcut-save" type="button" class="nt-btn nt-btn-primary" disabled>保存</button>
-          </div>
-          <div id="nt-settings-shortcut-hint" class="nt-settings-capture-hint" hidden></div>
-        </div>
-      </section>
+      <div class="nt-settings-body">
+        <nav class="nt-settings-nav" aria-label="设置分类">
+          <div class="nt-settings-nav-pill" aria-hidden="true"></div>
+          <button type="button" class="nt-settings-nav-item is-active" data-section="general">通用</button>
+          <button type="button" class="nt-settings-nav-item" data-section="shortcuts">快捷入口</button>
+          <button type="button" class="nt-settings-nav-item" data-section="sources">搜索内容</button>
+        </nav>
 
-      <section class="nt-settings-section">
-        <div class="nt-settings-head">
-          <div class="nt-settings-name">快捷入口</div>
-          <div class="nt-settings-desc">展示在新标签页宫格中的常用网站</div>
-        </div>
-        <div id="nt-settings-list" class="nt-settings-list"></div>
-        <div id="nt-settings-form" class="nt-settings-form" hidden>
-          <input id="nt-settings-form-url" type="url" placeholder="网址，如 https://example.com" spellcheck="false" />
-          <input id="nt-settings-form-title" type="text" placeholder="名称（可选）" spellcheck="false" />
-          <div class="nt-settings-form-actions">
-            <button id="nt-settings-form-cancel" type="button" class="nt-btn">取消</button>
-            <button id="nt-settings-form-ok" type="button" class="nt-btn nt-btn-primary">保存</button>
-          </div>
-        </div>
-        <button id="nt-settings-add" type="button" class="nt-btn nt-settings-add">+ 添加快捷方式</button>
-      </section>
+        <div class="nt-settings-content">
+          <section class="nt-settings-section" data-section="general">
+            <div class="nt-settings-cell">
+              <div class="nt-settings-row">
+                <div class="nt-settings-head">
+                  <div class="nt-settings-name">主题</div>
+                  <div class="nt-settings-desc">新标签页与搜索浮层的外观</div>
+                </div>
+                <div id="nt-settings-theme" class="nt-segmented" role="radiogroup" aria-label="主题">
+                  <span class="nt-segmented-pill"></span>
+                  <button type="button" role="radio" data-theme="system" aria-checked="true">跟随浏览器</button>
+                  <button type="button" role="radio" data-theme="light" aria-checked="false">亮色</button>
+                  <button type="button" role="radio" data-theme="dark" aria-checked="false">暗色</button>
+                </div>
+              </div>
+            </div>
 
-      <section class="nt-settings-section">
-        <div class="nt-settings-head">
-          <div class="nt-settings-name">搜索内容</div>
-          <div class="nt-settings-desc">选择聚焦搜索聚合的来源，网页搜索始终开启</div>
+            <div class="nt-settings-cell">
+              <div class="nt-settings-row">
+                <div class="nt-settings-head">
+                  <div class="nt-settings-name">快捷键</div>
+                  <div class="nt-settings-desc">在普通页面唤起聚焦搜索</div>
+                </div>
+                <div id="nt-settings-shortcut-view" class="nt-settings-shortcut-view">
+                  <kbd id="nt-settings-shortcut" class="nt-kbd">⌥ Space</kbd>
+                  <button id="nt-settings-shortcut-edit" type="button" class="nt-btn">更改</button>
+                </div>
+                <div id="nt-settings-shortcut-capture" class="nt-settings-shortcut-capture" hidden>
+                  <kbd id="nt-settings-shortcut-preview" class="nt-kbd nt-kbd-capture">按下新的快捷键…</kbd>
+                  <div class="nt-settings-capture-actions">
+                    <button id="nt-settings-shortcut-cancel" type="button" class="nt-btn">取消</button>
+                    <button id="nt-settings-shortcut-save" type="button" class="nt-btn nt-btn-primary" disabled>保存</button>
+                  </div>
+                </div>
+              </div>
+              <div id="nt-settings-shortcut-hint" class="nt-settings-capture-hint" hidden></div>
+            </div>
+          </section>
+
+          <section class="nt-settings-section" data-section="shortcuts" hidden>
+            <div class="nt-settings-head nt-settings-head-row">
+              <div class="nt-settings-head-text">
+                <div class="nt-settings-name">快捷入口</div>
+                <div class="nt-settings-desc">展示在新标签页宫格中的常用网站</div>
+              </div>
+              <button id="nt-settings-add" type="button" class="nt-btn nt-settings-add">+ 添加</button>
+            </div>
+            <div id="nt-settings-form" class="nt-settings-form" hidden>
+              <input id="nt-settings-form-url" type="url" placeholder="网址，如 https://example.com" spellcheck="false" />
+              <input id="nt-settings-form-title" type="text" placeholder="名称（可选）" spellcheck="false" />
+              <div class="nt-settings-form-actions">
+                <button id="nt-settings-form-cancel" type="button" class="nt-btn">取消</button>
+                <button id="nt-settings-form-ok" type="button" class="nt-btn nt-btn-primary">保存</button>
+              </div>
+            </div>
+            <div id="nt-settings-list" class="nt-settings-list"></div>
+          </section>
+
+          <section class="nt-settings-section" data-section="sources" hidden>
+            <div class="nt-settings-head">
+              <div class="nt-settings-name">搜索内容</div>
+              <div class="nt-settings-desc">选择聚焦搜索聚合的来源，网页搜索始终开启</div>
+            </div>
+            <label class="nt-settings-toggle">
+              <span class="nt-settings-toggle-label">标签页</span>
+              <input id="nt-settings-source-tab" type="checkbox" />
+              <span class="nt-switch" aria-hidden="true"></span>
+            </label>
+            <label class="nt-settings-toggle">
+              <span class="nt-settings-toggle-label">书签</span>
+              <input id="nt-settings-source-bookmark" type="checkbox" />
+              <span class="nt-switch" aria-hidden="true"></span>
+            </label>
+            <label class="nt-settings-toggle">
+              <span class="nt-settings-toggle-label">历史记录</span>
+              <input id="nt-settings-source-history" type="checkbox" />
+              <span class="nt-switch" aria-hidden="true"></span>
+            </label>
+          </section>
         </div>
-        <label class="nt-settings-toggle">
-          <span class="nt-settings-toggle-label">标签页</span>
-          <input id="nt-settings-source-tab" type="checkbox" />
-          <span class="nt-switch" aria-hidden="true"></span>
-        </label>
-        <label class="nt-settings-toggle">
-          <span class="nt-settings-toggle-label">书签</span>
-          <input id="nt-settings-source-bookmark" type="checkbox" />
-          <span class="nt-switch" aria-hidden="true"></span>
-        </label>
-        <label class="nt-settings-toggle">
-          <span class="nt-settings-toggle-label">历史记录</span>
-          <input id="nt-settings-source-history" type="checkbox" />
-          <span class="nt-switch" aria-hidden="true"></span>
-        </label>
-      </section>
+      </div>
 
       <div class="nt-modal-actions">
         <button id="nt-settings-close" type="button" class="nt-btn nt-btn-primary">完成</button>

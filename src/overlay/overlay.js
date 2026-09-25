@@ -2,9 +2,11 @@
   'use strict';
 
   const CUSTOM_SHORTCUT_KEY = 'customShortcut';
+  const THEME_KEY = 'themeMode';
 
   let host = null;
   let shadow = null;
+  let maskEl = null;
   let input = null;
   let panel = null;
   let searchSeq = 0;
@@ -12,12 +14,33 @@
   let cssPromise = null;
   let pendingKeys = null;
   let trigger = null;
+  let themeMode = 'system';
+
+  // 主题：system（跟随浏览器）/ light / dark，作用于浮层的 data-sg-theme 属性
+  function applyTheme() {
+    if (!maskEl) return;
+    if (themeMode === 'system') delete maskEl.dataset.sgTheme;
+    else maskEl.dataset.sgTheme = themeMode;
+  }
+
+  try {
+    chrome.storage.local.get(THEME_KEY, (data) => {
+      if (chrome.runtime.lastError) return;
+      const mode = data[THEME_KEY];
+      themeMode = mode === 'light' || mode === 'dark' ? mode : 'system';
+      applyTheme();
+    });
+  } catch (_) {
+    /* 忽略：上下文失效 */
+  }
 
   function loadCss() {
     if (!cssPromise) {
+      // 附加随机参数防止扩展重载后 fetch 命中 HTTP 缓存里的旧 CSS
+      const bust = '?v=' + Date.now();
       cssPromise = Promise.all([
-        fetch(chrome.runtime.getURL('src/shared/results-panel.css')).then((r) => r.text()),
-        fetch(chrome.runtime.getURL('src/overlay/overlay.css')).then((r) => r.text())
+        fetch(chrome.runtime.getURL('src/shared/results-panel.css') + bust).then((r) => r.text()),
+        fetch(chrome.runtime.getURL('src/overlay/overlay.css') + bust).then((r) => r.text())
       ])
         .then((parts) => parts.join('\n'))
         .catch((err) => {
@@ -134,12 +157,19 @@
     }
   }
 
-  // 设置弹窗保存自定义快捷键后，已打开页面无需刷新即生效
+  // 设置弹窗保存自定义快捷键/主题后，已打开页面无需刷新即生效
   try {
     chrome.storage.onChanged.addListener((changes, area) => {
-      if (area !== 'local' || !(CUSTOM_SHORTCUT_KEY in changes)) return;
-      trigger = null;
-      loadTrigger();
+      if (area !== 'local') return;
+      if (CUSTOM_SHORTCUT_KEY in changes) {
+        trigger = null;
+        loadTrigger();
+      }
+      if (THEME_KEY in changes) {
+        const mode = changes[THEME_KEY].newValue;
+        themeMode = mode === 'light' || mode === 'dark' ? mode : 'system';
+        applyTheme();
+      }
     });
   } catch (_) {
     /* 忽略：上下文失效 */
@@ -342,6 +372,8 @@
 
     const mask = document.createElement('div');
     mask.className = 'sg-overlay-mask';
+    maskEl = mask;
+    applyTheme();
     mask.addEventListener('mousedown', (event) => {
       if (event.target === mask) closeOverlay();
     });
@@ -423,6 +455,7 @@
       host.remove();
       host = null;
       shadow = null;
+      maskEl = null;
       input = null;
       panel = null;
     }
