@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "spotlight-go",
   "description": "聚焦搜索与新标签页：快捷键唤起 Spotlight 风格搜索浮层，聚合网页建议、标签页、书签与历史；并提供黑白灰磨砂玻璃质感的简洁首页。",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "icons": {
     "16": "assets/icon-16.png",
     "48": "assets/icon-48.png",
