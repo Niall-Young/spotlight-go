@@ -265,6 +265,27 @@
     event.stopImmediatePropagation();
   }
 
+  function capturePaste(event) {
+    if (!event.isTrusted || (!host && pendingKeys === null)) return;
+    // paste 是独立于 keydown 的事件；聊天页面的全局粘贴处理器也必须隔离。
+    event.stopImmediatePropagation();
+    // closed shadow 外只能看到 host。目标与真实焦点都正确时保留原生
+    // 粘贴（选区替换、撤销及 input 事件），不自行重复插入。
+    if (host && event.target === host && shadow?.activeElement === input) return;
+
+    // 唤起过渡期或事件已指向宿主输入框时，不能让默认粘贴落到宿主。
+    event.preventDefault();
+    const text = event.clipboardData?.getData('text/plain').replace(/[\r\n]/g, '') || '';
+    if (!text) return;
+    if (!host) {
+      pendingKeys += text;
+    } else if (input) {
+      input.focus();
+      input.setRangeText(text, input.selectionStart, input.selectionEnd, 'end');
+      onInput();
+    }
+  }
+
   function restoreBufferedText(text) {
     if (!text) return;
     const el = document.activeElement;
@@ -282,6 +303,7 @@
   // 在页面脚本注册按键监听前占位；唤起、过渡、打开三态统一在此拦截。
   window.addEventListener('keydown', captureKeyDown, true);
   window.addEventListener('keypress', captureKeyPress, true);
+  window.addEventListener('paste', capturePaste, true);
   loadTrigger();
 
   chrome.runtime.onMessage.addListener((message) => {
