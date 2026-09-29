@@ -147,9 +147,23 @@
                 <button id="nt-settings-add" type="button" class="nt-btn nt-settings-add" data-i18n="settings.shortcuts.add">+ 添加</button>
               </div>
             </div>
+            <div class="nt-settings-cell">
+              <div class="nt-settings-row">
+                <div class="nt-settings-head">
+                  <div class="nt-settings-name" data-i18n="settings.quickMode.name"></div>
+                  <div class="nt-settings-desc" data-i18n="settings.quickMode.desc"></div>
+                </div>
+                <div id="nt-settings-quick-mode" class="nt-segmented" role="radiogroup" data-i18n-aria="settings.quickMode.name">
+                  <span class="nt-segmented-pill"></span>
+                  <button type="button" role="radio" data-quickmode="simple" data-i18n="settings.quickMode.simple"></button>
+                  <button type="button" role="radio" data-quickmode="quick" data-i18n="settings.quickMode.quick"></button>
+                </div>
+              </div>
+            </div>
             <div id="nt-settings-form" class="nt-settings-form" hidden>
               <input id="nt-settings-form-url" type="url" placeholder="网址，如 https://example.com" spellcheck="false" data-i18n-placeholder="settings.shortcuts.formUrl" />
               <input id="nt-settings-form-title" type="text" placeholder="名称（可选）" spellcheck="false" data-i18n-placeholder="settings.shortcuts.formTitle" />
+              <p id="nt-settings-form-error" class="nt-form-error" role="alert" hidden></p>
               <div class="nt-settings-form-actions">
                 <button id="nt-settings-form-cancel" type="button" class="nt-btn" data-i18n="common.cancel">取消</button>
                 <button id="nt-settings-form-ok" type="button" class="nt-btn nt-btn-primary" data-i18n="common.save">保存</button>
@@ -208,6 +222,23 @@
       </div>
     </div>
   </div>
+
+  <p id="nt-grid-error" class="nt-form-error nt-grid-error" role="alert" hidden></p>
+
+  <dialog id="nt-add-dialog" class="nt-add-dialog" aria-labelledby="nt-add-title">
+    <form id="nt-add-form" class="nt-settings-form" novalidate>
+      <h2 id="nt-add-title" class="nt-modal-title" data-i18n="quickAdd.title"></h2>
+      <label for="nt-add-url" data-i18n="quickAdd.url"></label>
+      <input id="nt-add-url" type="text" inputmode="url" autocomplete="url" spellcheck="false" autofocus data-i18n-placeholder="settings.shortcuts.formUrl" />
+      <label for="nt-add-name" data-i18n="settings.shortcuts.formTitle"></label>
+      <input id="nt-add-name" type="text" autocomplete="off" data-i18n-placeholder="settings.shortcuts.formTitle" />
+      <p id="nt-add-error" class="nt-form-error" role="alert" hidden></p>
+      <div class="nt-settings-form-actions">
+        <button id="nt-add-cancel" type="button" class="nt-btn" data-i18n="common.cancel"></button>
+        <button id="nt-add-submit" type="submit" class="nt-btn nt-btn-primary" data-i18n="common.add"></button>
+      </div>
+    </form>
+  </dialog>
 
   <dialog id="nt-import-dialog" class="nt-import-dialog" aria-labelledby="nt-import-title" aria-describedby="nt-import-help">
     <h2 id="nt-import-title" data-i18n="import.title"></h2>

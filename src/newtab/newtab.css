@@ -1442,3 +1442,31 @@ html[data-style="pink"][data-theme="dark"] .nt-segmented-pill {
     box-shadow: none;
   }
 }
+
+/* 快速添加入口与原生模态弹窗，共用当前主题的颜色。 */
+.nt-tile-add {
+  font: inherit;
+  color: var(--sg-text-secondary);
+  border-style: dashed;
+}
+.nt-tile-add .nt-tile-icon { font-size: 26px; font-weight: 300; }
+.nt-tile-add:focus-visible { outline: 2px solid var(--sg-text-secondary); outline-offset: 3px; }
+.nt-add-dialog {
+  width: min(400px, calc(100vw - 40px));
+  max-height: calc(100vh - 48px);
+  padding: 0;
+  border: 1px solid var(--nt-tile-border);
+  border-radius: 22px;
+  background: var(--nt-popover-bg);
+  color: var(--sg-text);
+  box-shadow: var(--nt-glass-shadow-focus);
+}
+.nt-add-dialog::backdrop { background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); }
+.nt-add-dialog .nt-settings-form { padding: 24px; border: 0; background: transparent; gap: 12px; }
+.nt-add-dialog h2 { margin: 0 0 6px; }
+.nt-add-dialog label { font-size: 13px; }
+.nt-add-dialog .nt-settings-form-actions { margin-top: 8px; }
+.nt-form-error { color: var(--sg-text); font-size: 12px; margin: 4px 0; }
+.nt-form-error[hidden] { display: none; }
+.nt-grid-error { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); }
+.nt-btn:disabled { opacity: 0.5; cursor: default; }

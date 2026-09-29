@@ -2,6 +2,7 @@
   'use strict';
 
   const SHORTCUTS_KEY = 'pinnedShortcuts';
+  const QUICK_MODE_KEY = 'quickLinksMode';
   const CUSTOM_SHORTCUT_KEY = 'customShortcut';
   const SOURCES_KEY = 'searchSources';
   const THEME_KEY = 'themeMode';
@@ -42,6 +43,25 @@
 
     return { positionPill, render };
   }
+
+  let quickMode = 'simple';
+  const quickModeGroup = document.getElementById('nt-settings-quick-mode');
+  const quickModeSegmented = setupSegmented(quickModeGroup, 'quickmode');
+
+  function applyQuickMode(value) {
+    quickMode = value === 'quick' ? 'quick' : 'simple';
+    quickModeSegmented.render(quickMode);
+  }
+
+  quickModeGroup.addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-quickmode]');
+    if (!button) return;
+    chrome.storage.local.set({ [QUICK_MODE_KEY]: button.dataset.quickmode }, () => {
+      const error = document.getElementById('nt-grid-error');
+      if (chrome.runtime.lastError) showFormError(error, 'quickAdd.saveError');
+      else error.hidden = true;
+    });
+  });
 
   // ---------- 主题 ----------
 
@@ -119,7 +139,7 @@
   }
 
   // 尽早读取并应用主题/样式/语言，尽量减少首屏闪烁
-  chrome.storage.local.get([THEME_KEY, STYLE_KEY, LANG_KEY], (data) => {
+  chrome.storage.local.get([THEME_KEY, STYLE_KEY, LANG_KEY, QUICK_MODE_KEY], (data) => {
     if (chrome.runtime.lastError) return;
     const mode = normalizeTheme(data[THEME_KEY]);
     applyTheme(mode);
@@ -128,10 +148,22 @@
     applyStyle(style);
     renderStyle(style);
     renderLang(normalizeLang(data[LANG_KEY]));
+    applyQuickMode(data[QUICK_MODE_KEY]);
+    renderGridPage();
   });
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
+    if (QUICK_MODE_KEY in changes) {
+      cancelGridDrag();
+      applyQuickMode(changes[QUICK_MODE_KEY].newValue);
+      renderGridPage();
+    }
+    if (SHORTCUTS_KEY in changes) {
+      cancelGridDrag();
+      renderGrid();
+      renderSettingsList();
+    }
     if (THEME_KEY in changes) {
       const mode = normalizeTheme(changes[THEME_KEY].newValue);
       applyTheme(mode);
@@ -154,6 +186,7 @@
     refreshDynamicTexts();
     themeSegmented.positionPill(true);
     langSegmented.positionPill(true);
+    quickModeSegmented.positionPill(true);
   });
 
   document.getElementById('nt-settings-theme').addEventListener('click', (event) => {
@@ -334,17 +367,33 @@
   }
 
   function loadShortcuts() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       chrome.storage.local.get(SHORTCUTS_KEY, (data) => {
+        if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
         resolve(Array.isArray(data[SHORTCUTS_KEY]) ? data[SHORTCUTS_KEY] : []);
       });
     });
   }
 
   function saveShortcuts(shortcuts) {
-    return new Promise((resolve) => {
-      chrome.storage.local.set({ [SHORTCUTS_KEY]: shortcuts }, resolve);
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.set({ [SHORTCUTS_KEY]: shortcuts }, () => {
+        if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
+        document.getElementById('nt-grid-error').hidden = true;
+        resolve();
+      });
     });
+  }
+
+  async function removeShortcut(entry) {
+    try {
+      const shortcuts = await loadShortcuts();
+      await saveShortcuts(shortcuts.filter((s) => s && s.url !== entry.url));
+      await renderGrid();
+      await renderSettingsList();
+    } catch (_) {
+      showFormError(document.getElementById('nt-grid-error'), 'quickAdd.saveError');
+    }
   }
 
   // 宫格最多展示两行；超出时底部分页箭头翻页
@@ -355,26 +404,31 @@
   let gridEntries = [];
 
   function gridPageSize() {
-    const cols = Math.max(
-      1,
-      Math.floor(((grid.clientWidth || 760) + TILE_GAP) / (TILE_WIDTH + TILE_GAP))
-    );
+    const style = getComputedStyle(grid);
+    const contentWidth = (grid.clientWidth || 760) -
+      parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    const cols = Math.max(1, Math.floor((contentWidth + TILE_GAP) / (TILE_WIDTH + TILE_GAP)));
     return cols * GRID_ROWS;
   }
 
   async function renderGrid() {
-    gridEntries = (await loadShortcuts()).filter((s) => s && s.url);
-    renderGridPage();
+    try {
+      gridEntries = (await loadShortcuts()).filter((s) => s && s.url);
+      renderGridPage();
+    } catch (_) {
+      showFormError(document.getElementById('nt-grid-error'), 'quickAdd.saveError');
+    }
   }
 
   function renderGridPage() {
     const pageSize = gridPageSize();
-    const pages = Math.max(1, Math.ceil(gridEntries.length / pageSize));
+    const pages = Math.max(1, Math.ceil((gridEntries.length + (quickMode === 'quick' ? 1 : 0)) / pageSize));
     gridPage = Math.min(Math.max(gridPage, 0), pages - 1);
     gridTrack.textContent = '';
     for (let p = 0; p < pages; p++) {
       const pageEl = document.createElement('div');
       pageEl.className = 'nt-grid-page';
+      pageEl.inert = p !== gridPage;
       const start = p * pageSize;
       gridEntries.slice(start, start + pageSize).forEach((entry, i) => {
         const tile = buildTile({
@@ -385,6 +439,7 @@
         setupTileDrag(tile);
         pageEl.appendChild(tile);
       });
+      if (quickMode === 'quick' && p === pages - 1) pageEl.appendChild(buildAddTile());
       gridTrack.appendChild(pageEl);
     }
     // 重建（加载/拖拽/resize）时不播滑动动画，直接落位
@@ -399,9 +454,11 @@
 
   // 翻页只动轨道位移，不重建瓦片，避免图标重复加载闪烁
   function goToGridPage(page) {
+    if (gridDrag) return;
     const pageSize = gridPageSize();
-    const pages = Math.max(1, Math.ceil(gridEntries.length / pageSize));
+    const pages = Math.max(1, Math.ceil((gridEntries.length + (quickMode === 'quick' ? 1 : 0)) / pageSize));
     gridPage = Math.min(Math.max(page, 0), pages - 1);
+    Array.from(gridTrack.children).forEach((pageEl, index) => { pageEl.inert = index !== gridPage; });
     gridTrack.style.transform = 'translateX(' + -gridPage * 100 + '%)';
     gridPrev.disabled = gridPage === 0;
     gridNext.disabled = gridPage >= pages - 1;
@@ -409,54 +466,97 @@
 
   // ---------- 宫格拖拽排序 ----------
 
-  // 拖拽经过其他瓦片时直接移动 DOM 实时预览落点；
-  // drop 时按 DOM 顺序重排 gridEntries 并持久化，dragend 统一重渲染校正索引
-  let dragTile = null;
+  // 固定开始拖拽时的几何位置，CSS 排序预览不会改变命中区域。
+  // 加号卡片没有 data-index，不进入网站排序。
+  let gridDrag = null;
+  let gridSaving = false;
+
+  function cancelGridDrag() {
+    if (!gridDrag) return;
+    gridDrag = null;
+    renderGridPage();
+  }
 
   function setupTileDrag(tile) {
     tile.draggable = true;
     tile.addEventListener('dragstart', (event) => {
-      dragTile = tile;
+      if (gridSaving) { event.preventDefault(); return; }
+      const page = tile.parentElement;
+      const tiles = Array.from(page.querySelectorAll('[data-index]'));
+      gridDrag = {
+        tile, page, tiles, start: Number(tiles[0].dataset.index),
+        source: tiles.indexOf(tile), target: tiles.indexOf(tile),
+        slots: tiles.map((item) => item.getBoundingClientRect()),
+        entries: gridEntries.slice()
+      };
       event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', tile.dataset.index || '');
-      // 延迟到拖拽影像生成后再加半透明，避免残影也变淡
-      requestAnimationFrame(() => tile.classList.add('nt-tile-dragging'));
+      event.dataTransfer.setData('text/plain', tile.dataset.index);
+      requestAnimationFrame(() => {
+        if (gridDrag && gridDrag.tile === tile) tile.classList.add('nt-tile-dragging');
+      });
     });
-    tile.addEventListener('dragend', () => {
-      tile.classList.remove('nt-tile-dragging');
-      dragTile = null;
-      renderGridPage();
-    });
+    tile.addEventListener('dragend', cancelGridDrag);
   }
 
-  grid.addEventListener('dragover', (event) => {
-    if (!dragTile) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-    const target = event.target.closest('.nt-tile');
-    if (!target || target === dragTile) return;
-    const page = target.parentElement;
-    if (page !== dragTile.parentElement) return;
-    const rect = target.getBoundingClientRect();
-    // 同行内按水平中点、跨行按垂直中点判断插到目标前还是后
-    const after =
-      event.clientY > rect.top + rect.height / 2 ||
-      (event.clientY > rect.top && event.clientX > rect.left + rect.width / 2);
-    page.insertBefore(dragTile, after ? target.nextSibling : target);
+  function previewGridDrop(event) {
+    const drag = gridDrag;
+    if (!drag) return;
+    // 先找最近的一行，再找该行最近的水平槽位；上下半部行为一致。
+    const rowDistance = Math.min(...drag.slots.map((rect) =>
+      Math.abs(event.clientY - (rect.top + rect.height / 2))));
+    let target = drag.source;
+    let distance = Infinity;
+    drag.slots.forEach((rect, index) => {
+      if (Math.abs(event.clientY - (rect.top + rect.height / 2)) > rowDistance + 1) return;
+      const dx = Math.abs(event.clientX - (rect.left + rect.width / 2));
+      if (dx < distance) { distance = dx; target = index; }
+    });
+    if (target === drag.target) return;
+    drag.target = target;
+    const tiles = drag.tiles.slice();
+    tiles.splice(drag.source, 1);
+    tiles.splice(target, 0, drag.tile);
+    // 不挪动正在拖拽的 DOM 节点，否则 Chromium 可能提前终止原生拖拽。
+    tiles.forEach((tile, index) => { tile.style.order = String(index); });
+    const addTile = drag.page.querySelector('.nt-tile-add');
+    if (addTile) addTile.style.order = String(tiles.length);
+  }
+
+  grid.addEventListener('dragenter', (event) => {
+    if (gridDrag) event.preventDefault();
   });
 
-  grid.addEventListener('drop', (event) => {
-    if (!dragTile) return;
+  grid.addEventListener('dragover', (event) => {
+    if (!gridDrag) return;
     event.preventDefault();
-    const page = dragTile.parentElement;
-    if (!page) return;
-    const order = Array.from(page.querySelectorAll('.nt-tile'))
-      .map((tile) => Number(tile.dataset.index))
-      .filter((i) => Number.isInteger(i));
-    if (order.length === 0) return;
-    const reordered = order.map((i) => gridEntries[i]);
-    gridEntries.splice(gridPage * gridPageSize(), reordered.length, ...reordered);
-    saveShortcuts(gridEntries);
+    event.dataTransfer.dropEffect = 'move';
+    previewGridDrop(event);
+  });
+
+  grid.addEventListener('drop', async (event) => {
+    if (!gridDrag) return;
+    event.preventDefault();
+    previewGridDrop(event);
+    const drag = gridDrag;
+    gridDrag = null;
+    if (drag.source === drag.target) { renderGridPage(); return; }
+    const next = drag.entries.slice();
+    const [entry] = next.splice(drag.start + drag.source, 1);
+    next.splice(drag.start + drag.target, 0, entry);
+    gridSaving = true;
+    gridEntries = next;
+    renderGridPage();
+    const error = document.getElementById('nt-grid-error');
+    error.hidden = true;
+    try {
+      await saveShortcuts(next);
+    } catch (_) {
+      gridEntries = drag.entries;
+      renderGridPage();
+      showFormError(error, 'quickAdd.saveError');
+    } finally {
+      gridSaving = false;
+    }
   });
 
   gridPrev.addEventListener('click', () => {
@@ -470,7 +570,7 @@
   let gridResizeTimer = 0;
   window.addEventListener('resize', () => {
     clearTimeout(gridResizeTimer);
-    gridResizeTimer = setTimeout(renderGridPage, 150);
+    gridResizeTimer = setTimeout(() => { cancelGridDrag(); renderGridPage(); }, 150);
   });
 
   // ---------- 设置弹窗 ----------
@@ -682,13 +782,14 @@
     // 主题/语言分段滑块在面板可见后才能测到布局，这里补齐初始定位（不做过渡）
     themeSegmented.positionPill(false);
     langSegmented.positionPill(false);
+    quickModeSegmented.positionPill(false);
   }
 
   for (const item of settingsNavItems) {
     item.addEventListener('click', () => showSettingsSection(item.dataset.section));
   }
 
-  function openSettings(editEntry) {
+  async function openSettings(editEntry) {
     stopCapture();
     closeForm();
     settingsMask.hidden = false;
@@ -697,8 +798,8 @@
     showSettingsSection(editEntry ? 'shortcuts' : 'general');
     refreshShortcutLabel();
     renderSources();
-    renderSettingsList();
-    if (editEntry) openForm(editEntry);
+    await renderSettingsList();
+    if (editEntry && !settingsMask.hidden) openForm(editEntry);
   }
 
   function closeSettings() {
@@ -720,7 +821,12 @@
 
   // 设置弹窗内的快速入口列表：新增/编辑/删除在此完成，保存后同步刷新外面宫格
   async function renderSettingsList() {
-    const shortcuts = await loadShortcuts();
+    let shortcuts;
+    try { shortcuts = await loadShortcuts(); }
+    catch (_) { showFormError(document.getElementById('nt-grid-error'), 'quickAdd.saveError'); return; }
+    // 表单可能位于列表内，清空列表前先保留，避免后续新增引用已脱离 DOM。
+    const formOpen = formEntry !== undefined;
+    settingsList.before(settingsForm);
     settingsList.textContent = '';
     const entries = shortcuts.filter((s) => s && s.url);
     if (entries.length === 0) {
@@ -733,6 +839,7 @@
     for (const entry of entries) {
       settingsList.appendChild(buildSettingsItem(entry));
     }
+    if (formOpen) settingsList.prepend(settingsForm);
   }
 
   function buildSettingsItem(entry) {
@@ -743,6 +850,7 @@
     icon.className = 'nt-settings-item-icon';
     const img = document.createElement('img');
     img.alt = '';
+    img.draggable = false;
     img.src = faviconUrl(entry.url);
     icon.appendChild(img);
     row.appendChild(icon);
@@ -772,10 +880,7 @@
     remove.textContent = i18n.t('common.delete');
     remove.addEventListener('click', async () => {
       if (formEntry && formEntry.url === entry.url) closeForm();
-      const shortcuts = await loadShortcuts();
-      await saveShortcuts(shortcuts.filter((s) => s.url !== entry.url));
-      renderSettingsList();
-      renderGrid();
+      await removeShortcut(entry);
     });
     row.appendChild(remove);
 
@@ -785,6 +890,7 @@
   // 内联表单：编辑时插入到对应卡片之后，新增时插入到列表顶部
   function openForm(entry, afterRow) {
     formEntry = entry || null;
+    document.getElementById('nt-settings-form-error').hidden = true;
     settingsFormOk.textContent = formEntry ? i18n.t('common.save') : i18n.t('common.add');
     settingsFormUrl.value = formEntry ? formEntry.url : '';
     settingsFormTitle.value = formEntry ? formEntry.title || '' : '';
@@ -804,42 +910,133 @@
   settingsAdd.addEventListener('click', () => openForm(null));
   settingsFormCancel.addEventListener('click', closeForm);
 
-  async function submitForm() {
-    const rawUrl = settingsFormUrl.value.trim();
-    if (!rawUrl) {
-      settingsFormUrl.focus();
-      return;
-    }
-    const url = normalizeUrl(rawUrl);
+  function showFormError(element, key) {
+    element.dataset.i18n = key;
+    element.textContent = i18n.t(key);
+    element.hidden = false;
+  }
+
+  function readShortcut(urlInput, titleInput, error) {
+    error.hidden = true;
+    const raw = urlInput.value.trim();
+    const url = normalizeUrl(raw);
     try {
+      if (!raw || /\s/.test(raw)) throw new Error('Invalid URL');
       new URL(url);
     } catch (_) {
-      settingsFormUrl.focus();
-      return;
+      showFormError(error, 'quickAdd.invalidUrl');
+      urlInput.focus();
+      return null;
     }
-    const title = settingsFormTitle.value.trim() || hostOf(url);
-    const shortcuts = await loadShortcuts();
-    if (formEntry) {
-      const index = shortcuts.findIndex((s) => s.url === formEntry.url);
-      const next = shortcuts.filter((s, i) => i === index || s.url !== url);
-      if (index >= 0) next[index] = { title, url };
-      else next.push({ title, url });
-      await saveShortcuts(next);
-    } else {
-      await saveShortcuts([
-        ...shortcuts.filter((s) => s.url !== url),
-        { title, url }
-      ]);
-    }
-    closeForm();
-    renderSettingsList();
-    renderGrid();
+    return { url, title: titleInput.value.trim() || hostOf(url) };
   }
+
+  // 设置与首页 dialog 共用规范化后的保存规则；重复网址保留一份。
+  async function persistShortcut(entry, original) {
+    const shortcuts = await loadShortcuts();
+    const next = [];
+    let replaced = false;
+    for (const item of shortcuts) {
+      if (!item || !item.url) continue;
+      if (original && item.url === original.url && !replaced) {
+        next.push(entry);
+        replaced = true;
+      } else if (item.url !== entry.url) next.push(item);
+    }
+    if (!replaced) next.push(entry);
+    await saveShortcuts(next);
+    return next;
+  }
+
+  let formSaving = false;
+  async function submitForm() {
+    if (formSaving) return;
+    const error = document.getElementById('nt-settings-form-error');
+    const entry = readShortcut(settingsFormUrl, settingsFormTitle, error);
+    if (!entry) return;
+    formSaving = true;
+    settingsFormOk.disabled = true;
+    try {
+      await persistShortcut(entry, formEntry);
+      closeForm();
+      await renderSettingsList();
+      await renderGrid();
+    } catch (_) {
+      showFormError(error, 'quickAdd.saveError');
+    } finally {
+      formSaving = false;
+      settingsFormOk.disabled = false;
+    }
+  }
+
+  const addDialog = document.getElementById('nt-add-dialog');
+  const addForm = document.getElementById('nt-add-form');
+  const addUrl = document.getElementById('nt-add-url');
+  const addName = document.getElementById('nt-add-name');
+  const addError = document.getElementById('nt-add-error');
+  const addSubmit = document.getElementById('nt-add-submit');
+  const addCancel = document.getElementById('nt-add-cancel');
+  let addSaving = false;
+
+  function buildAddTile() {
+    const tile = document.createElement('button');
+    tile.type = 'button';
+    tile.className = 'nt-tile nt-tile-add';
+    tile.setAttribute('aria-label', i18n.t('quickAdd.title'));
+    const icon = document.createElement('span');
+    icon.className = 'nt-tile-icon';
+    icon.textContent = '+';
+    icon.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('span');
+    label.className = 'nt-tile-title';
+    label.textContent = i18n.t('common.add');
+    tile.append(icon, label);
+    tile.addEventListener('click', () => {
+      addForm.reset();
+      addError.hidden = true;
+      addDialog.showModal();
+      addUrl.focus();
+    });
+    return tile;
+  }
+
+  addCancel.addEventListener('click', () => addDialog.close());
+  addDialog.addEventListener('cancel', (event) => {
+    if (addSaving) event.preventDefault();
+  });
+  addDialog.addEventListener('close', () => {
+    const page = gridTrack.children[gridPage];
+    const addTile = page && page.querySelector('.nt-tile-add');
+    (addTile || input).focus();
+  });
+  addForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (addSaving) return;
+    const entry = readShortcut(addUrl, addName, addError);
+    if (!entry) return;
+    addSaving = true;
+    addSubmit.disabled = addCancel.disabled = true;
+    addUrl.readOnly = addName.readOnly = true;
+    try {
+      const next = await persistShortcut(entry, null);
+      gridEntries = next.filter((item) => item && item.url);
+      gridPage = Math.floor(gridEntries.findIndex((item) => item.url === entry.url) / gridPageSize());
+      renderGridPage();
+      addDialog.close();
+    } catch (_) {
+      showFormError(addError, 'quickAdd.saveError');
+      addUrl.focus();
+    } finally {
+      addSaving = false;
+      addSubmit.disabled = addCancel.disabled = false;
+      addUrl.readOnly = addName.readOnly = false;
+    }
+  });
 
   settingsFormOk.addEventListener('click', submitForm);
   [settingsFormUrl, settingsFormTitle].forEach((el) => {
     el.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
+      if (event.key === 'Enter' && !event.isComposing) {
         event.preventDefault();
         submitForm();
       }
@@ -855,6 +1052,7 @@
     icon.className = 'nt-tile-icon';
     const img = document.createElement('img');
     img.alt = '';
+    img.draggable = false;
     img.src = faviconUrl(entry.url);
     icon.appendChild(img);
     tile.appendChild(icon);
@@ -888,6 +1086,7 @@
       settingsShortcutPreview.textContent = i18n.t('settings.shortcut.press');
     }
     renderSettingsList();
+    if (!gridDrag) renderGridPage();
     panel.repaint();
   }
 
@@ -909,10 +1108,7 @@
     remove.textContent = i18n.t('common.delete');
     remove.addEventListener('click', async () => {
       hideContextMenu();
-      const shortcuts = await loadShortcuts();
-      await saveShortcuts(shortcuts.filter((s) => s.url !== entry.url));
-      renderGrid();
-      renderSettingsList();
+      await removeShortcut(entry);
     });
     contextMenu.appendChild(remove);
 
@@ -939,6 +1135,8 @@
   document.addEventListener('click', () => hideContextMenu());
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
+      if (addDialog.open) return;
+      cancelGridDrag();
       hideContextMenu();
       if (formEntry !== undefined) {
         closeForm();
