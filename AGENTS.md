@@ -11,6 +11,11 @@ Chrome 扩展（Manifest V3）：快捷键唤起的 Spotlight 风格聚焦搜索
 - 浮层在宿主页面内引用扩展资源（如 `assets/pink-girl.png` 贴纸装饰）时，必须把资源登记进 `manifest.json` 的 `web_accessible_resources` 并用 `chrome.runtime.getURL()` 取地址；新标签页内可直接相对路径引用。
 - 搜索聚合与打开结果都在 `src/background/service-worker.js` 中完成；页面侧只通过 `chrome.runtime` 消息通信。
 
+## 界面规范
+
+- 新增界面复用现有弹窗、按钮及颜色变量；标题、正文和间距遵循同类组件，不单独放大字号
+- 中文界面文案结尾不使用句号（。）
+
 ## 工作流
 
 - 每次代码改动完成后都必须过三个 gate：先按 `agents-gen` 技能检查并维护 `AGENTS.md`（无变化则报告 unchanged），再按 `good-readme` 技能检查并维护 `README.md`，最后按 `gitwork` 技能隔离提交任务改动。

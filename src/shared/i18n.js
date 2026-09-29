@@ -7,30 +7,29 @@
 
   const MESSAGES = {
     zh: {
-      'welcome.brand': 'Spotlight Go',
-      'welcome.title': '从你熟悉的网站开始',
-      'welcome.help': '导入 iTab 备份或浏览器书签，把常用网站带到新首页。也可以自己设置，慢慢添加。',
+      'welcome.title': '设置你的新首页',
+      'welcome.help': '导入 iTab 或浏览器书签，也可以自己添加',
       'welcome.import': '导入我的网站',
       'welcome.skip': '自己设置',
-      'welcome.note': '以后随时可以在「设置 → 快速入口」中导入。',
-      'welcome.saveError': '保存选择失败，请重试。',
+      'welcome.note': '以后随时可以在「设置 → 快速入口」中导入',
+      'welcome.saveError': '保存选择失败，请重试',
 
       "import.open": "导入",
       "import.title": "导入快速入口",
-      "import.help": "支持 iTab 备份（.itabdata / .json）和浏览器 HTML 书签，最大 10 MB。iTab 请在「设置 → 备份与恢复」导出并勾选「图标」。仅导入网站，文件夹会展开；文件只在本机处理。",
+      "import.help": "支持 iTab 备份（.itabdata / .json）和浏览器 HTML 书签，最大 10 MB。iTab 请在「设置 → 备份与恢复」导出并勾选「图标」。仅导入网站，文件夹会展开；文件只在本机处理",
       "import.file": "选择备份或书签文件",
       "import.preview": "待导入的网站",
       "import.summary": "新增 {added} 个 · 重复 {duplicates} 个 · 无效 {invalid} 个",
       "import.confirm": "确认导入",
       "import.saving": "正在保存…",
       "import.success": "已导入 {count} 个快速入口",
-      "import.malformed": "文件内容损坏，无法读取。请重新导出备份。",
-      "import.unsupported": "暂不支持此文件结构。请选择包含图标的 iTab 备份或浏览器 HTML 书签文件。",
-      "import.empty": "未找到可导入的网站，仅支持 HTTP 和 HTTPS 网址。",
-      "import.tooLarge": "文件超过 10 MB，请减少导出内容后重试。",
-      "import.readError": "读取文件或现有入口失败，请重试。",
-      "import.saveError": "保存失败，尚未完成导入。请重试。",
-      "import.previewLimit": "仅预览前 100 个网站，确认后导入全部新增网站。",
+      "import.malformed": "文件内容损坏，无法读取。请重新导出备份",
+      "import.unsupported": "暂不支持此文件结构。请选择包含图标的 iTab 备份或浏览器 HTML 书签文件",
+      "import.empty": "未找到可导入的网站，仅支持 HTTP 和 HTTPS 网址",
+      "import.tooLarge": "文件超过 10 MB，请减少导出内容后重试",
+      "import.readError": "读取文件或现有入口失败，请重试",
+      "import.saveError": "保存失败，尚未完成导入。请重试",
+      "import.previewLimit": "仅预览前 100 个网站，确认后导入全部新增网站",
 
       'app.name': '聚焦搜索',
       'newtab.title': '新标签页',
@@ -60,7 +59,7 @@
       'settings.shortcut.press': '按下新的快捷键…',
       'settings.shortcut.browserHint':
         '浏览器级快捷键 {shortcut} 会被 Chrome 直接拦截并触发唤起，无法在此录入；' +
-        '可在 chrome://extensions/shortcuts 修改或移除该绑定。',
+        '可在 chrome://extensions/shortcuts 修改或移除该绑定',
       'settings.shortcuts.name': '快速入口',
       'settings.shortcuts.desc': '展示在新标签页宫格中的常用网站',
       'settings.shortcuts.add': '+ 添加',
@@ -101,9 +100,8 @@
       'overlay.esc': 'Esc 关闭'
     },
     en: {
-      'welcome.brand': 'Spotlight Go',
-      'welcome.title': 'Start with your favorite websites',
-      'welcome.help': 'Bring your websites along with an iTab backup or browser bookmarks. Or start fresh and add them yourself.',
+      'welcome.title': 'Set up your homepage',
+      'welcome.help': 'Import your websites from iTab or browser bookmarks, or add them yourself.',
       'welcome.import': 'Import my websites',
       'welcome.skip': 'Set up myself',
       'welcome.note': 'You can always import later in Settings → Quick Links.',

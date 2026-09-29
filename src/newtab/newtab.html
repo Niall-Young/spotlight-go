@@ -240,20 +240,19 @@
     </form>
   </dialog>
 
-  <dialog id="nt-welcome-dialog" class="nt-import-dialog nt-welcome-dialog" aria-labelledby="nt-welcome-title" aria-describedby="nt-welcome-help">
-    <p class="nt-welcome-brand" data-i18n="welcome.brand"></p>
-    <h2 id="nt-welcome-title" data-i18n="welcome.title"></h2>
+  <dialog id="nt-welcome-dialog" class="nt-add-dialog nt-welcome-dialog" aria-labelledby="nt-welcome-title" aria-describedby="nt-welcome-help">
+    <h2 id="nt-welcome-title" class="nt-modal-title" tabindex="-1" autofocus data-i18n="welcome.title"></h2>
     <p id="nt-welcome-help" data-i18n="welcome.help"></p>
-    <div class="nt-welcome-actions">
-      <button id="nt-welcome-import" type="button" class="nt-btn nt-btn-primary" data-i18n="welcome.import" autofocus></button>
-      <button id="nt-welcome-skip" type="button" class="nt-btn" data-i18n="welcome.skip"></button>
-    </div>
     <p class="nt-welcome-note" data-i18n="welcome.note"></p>
+    <div class="nt-modal-actions">
+      <button id="nt-welcome-skip" type="button" class="nt-btn" data-i18n="welcome.skip"></button>
+      <button id="nt-welcome-import" type="button" class="nt-btn nt-btn-primary" data-i18n="welcome.import"></button>
+    </div>
     <p id="nt-welcome-error" class="nt-import-error" role="alert" data-i18n="welcome.saveError" hidden></p>
   </dialog>
 
   <dialog id="nt-import-dialog" class="nt-import-dialog" aria-labelledby="nt-import-title" aria-describedby="nt-import-help">
-    <h2 id="nt-import-title" data-i18n="import.title"></h2>
+    <h2 id="nt-import-title" class="nt-modal-title" data-i18n="import.title"></h2>
     <p id="nt-import-help" data-i18n="import.help"></p>
     <label for="nt-import-file" data-i18n="import.file"></label>
     <input id="nt-import-file" type="file" accept=".itabdata,.json,.html,.htm" />
