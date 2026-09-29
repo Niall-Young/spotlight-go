@@ -7,6 +7,23 @@
 
   const MESSAGES = {
     zh: {
+      "import.open": "导入",
+      "import.title": "导入快速入口",
+      "import.help": "支持 iTab 备份（.itabdata / .json）和浏览器 HTML 书签，最大 10 MB。iTab 请在「设置 → 备份与恢复」导出并勾选「图标」。仅导入网站，文件夹会展开；文件只在本机处理。",
+      "import.file": "选择备份或书签文件",
+      "import.preview": "待导入的网站",
+      "import.summary": "新增 {added} 个 · 重复 {duplicates} 个 · 无效 {invalid} 个",
+      "import.confirm": "确认导入",
+      "import.saving": "正在保存…",
+      "import.success": "已导入 {count} 个快速入口",
+      "import.malformed": "文件内容损坏，无法读取。请重新导出备份。",
+      "import.unsupported": "暂不支持此文件结构。请选择包含图标的 iTab 备份或浏览器 HTML 书签文件。",
+      "import.empty": "未找到可导入的网站，仅支持 HTTP 和 HTTPS 网址。",
+      "import.tooLarge": "文件超过 10 MB，请减少导出内容后重试。",
+      "import.readError": "读取文件或现有入口失败，请重试。",
+      "import.saveError": "保存失败，尚未完成导入。请重试。",
+      "import.previewLimit": "仅预览前 100 个网站，确认后导入全部新增网站。",
+
       'app.name': '聚焦搜索',
       'newtab.title': '新标签页',
       'newtab.searchPlaceholder': '搜索或输入网址…',
@@ -68,6 +85,23 @@
       'overlay.esc': 'Esc 关闭'
     },
     en: {
+      "import.open": "Import",
+      "import.title": "Import quick links",
+      "import.help": "Choose an iTab backup (.itabdata / .json) or browser HTML bookmarks, up to 10 MB. In iTab, export from Settings → Backup and restore with Icons selected. Only websites are imported; folders are flattened. Files stay on this device.",
+      "import.file": "Choose a backup or bookmark file",
+      "import.preview": "Websites to import",
+      "import.summary": "{added} new · {duplicates} duplicates · {invalid} invalid",
+      "import.confirm": "Import links",
+      "import.saving": "Saving…",
+      "import.success": "Imported {count} quick links",
+      "import.malformed": "This file is damaged. Please export a new backup.",
+      "import.unsupported": "Unsupported structure. Choose an iTab backup containing icons or a browser HTML bookmark file.",
+      "import.empty": "No websites to import. Only HTTP and HTTPS URLs are supported.",
+      "import.tooLarge": "File exceeds 10 MB. Export fewer items and try again.",
+      "import.readError": "Could not read the file or existing links. Please try again.",
+      "import.saveError": "Could not save. Import is not complete; please try again.",
+      "import.previewLimit": "Previewing the first 100 websites. All new websites will be imported.",
+
       'app.name': 'Spotlight Search',
       'newtab.title': 'New Tab',
       'newtab.searchPlaceholder': 'Search or enter a URL…',

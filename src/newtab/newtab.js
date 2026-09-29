@@ -949,6 +949,12 @@
   });
   window.addEventListener('blur', hideContextMenu);
 
+  window.addEventListener('spotlight:shortcuts-imported', () => {
+    closeForm();
+    renderSettingsList();
+    renderGrid();
+  });
+
   renderGrid();
   input.focus();
 })();

@@ -17,5 +17,5 @@ Chrome 扩展（Manifest V3）：快捷键唤起的 Spotlight 风格聚焦搜索
 
 ## 验证
 
-- 无测试与 lint 配置。验证方式：`chrome://extensions` 开启开发者模式后「加载已解压的扩展程序」，修改源码后点击扩展的刷新按钮重载。
+- 导入解析回归：`node --test tests/shortcut-import.test.cjs`（仅需 Node.js，无 npm 依赖）；无 lint 配置。浏览器验证方式：`chrome://extensions` 开启开发者模式后「加载已解压的扩展程序」，修改源码后点击扩展的刷新按钮重载。
 - 手动回归三个入口：任意普通页面按 `Option+空格` 唤起浮层；`chrome://` 等不可注入页面应回退为打开新标签页；新标签页的搜索框与快捷方式。

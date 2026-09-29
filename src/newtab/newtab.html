@@ -6,6 +6,7 @@
   <title data-i18n="newtab.title">新标签页</title>
   <link rel="stylesheet" href="../shared/results-panel.css" />
   <link rel="stylesheet" href="newtab.css" />
+  <link rel="stylesheet" href="shortcut-import.css" />
 </head>
 <body>
   <main class="nt-main">
@@ -141,7 +142,10 @@
                 <div class="nt-settings-name" data-i18n="settings.shortcuts.name">快速入口</div>
                 <div class="nt-settings-desc" data-i18n="settings.shortcuts.desc">展示在新标签页宫格中的常用网站</div>
               </div>
-              <button id="nt-settings-add" type="button" class="nt-btn nt-settings-add" data-i18n="settings.shortcuts.add">+ 添加</button>
+              <div class="nt-import-actions">
+                <button id="nt-settings-import" type="button" class="nt-btn" data-i18n="import.open"></button>
+                <button id="nt-settings-add" type="button" class="nt-btn nt-settings-add" data-i18n="settings.shortcuts.add">+ 添加</button>
+              </div>
             </div>
             <div id="nt-settings-form" class="nt-settings-form" hidden>
               <input id="nt-settings-form-url" type="url" placeholder="网址，如 https://example.com" spellcheck="false" data-i18n-placeholder="settings.shortcuts.formUrl" />
@@ -151,6 +155,7 @@
                 <button id="nt-settings-form-ok" type="button" class="nt-btn nt-btn-primary" data-i18n="common.save">保存</button>
               </div>
             </div>
+            <p id="nt-import-status" class="nt-import-status" role="status" hidden></p>
             <div id="nt-settings-list" class="nt-settings-list"></div>
           </section>
 
@@ -204,8 +209,24 @@
     </div>
   </div>
 
+  <dialog id="nt-import-dialog" class="nt-import-dialog" aria-labelledby="nt-import-title" aria-describedby="nt-import-help">
+    <h2 id="nt-import-title" data-i18n="import.title"></h2>
+    <p id="nt-import-help" data-i18n="import.help"></p>
+    <label for="nt-import-file" data-i18n="import.file"></label>
+    <input id="nt-import-file" type="file" accept=".itabdata,.json,.html,.htm" />
+    <p id="nt-import-error" class="nt-import-error" role="alert" hidden></p>
+    <p id="nt-import-summary" role="status" aria-live="polite"></p>
+    <ul id="nt-import-preview" class="nt-import-preview" data-i18n-aria="import.preview"></ul>
+    <div class="nt-settings-form-actions">
+      <button id="nt-import-cancel" type="button" class="nt-btn" data-i18n="common.cancel"></button>
+      <button id="nt-import-confirm" type="button" class="nt-btn nt-btn-primary" data-i18n="import.confirm" disabled></button>
+    </div>
+  </dialog>
+
   <script src="../shared/i18n.js"></script>
   <script src="../shared/results-panel.js"></script>
   <script src="newtab.js"></script>
+  <script src="shortcut-import.js"></script>
+  <script src="shortcut-import-ui.js"></script>
 </body>
 </html>
