@@ -1,5 +1,12 @@
 importScripts('search-rank.js');
 
+// Only fresh installs enter onboarding; updates preserve the existing experience.
+chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+  if (reason !== 'install') return;
+  await chrome.storage.local.set({ onboardingPending: true });
+  await chrome.tabs.create({ url: chrome.runtime.getURL('src/newtab/newtab.html') });
+});
+
 const LIMIT_PER_GROUP = 5;
 const HISTORY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 const HISTORY_MAX_CANDIDATES = 50;

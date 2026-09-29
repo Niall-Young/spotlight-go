@@ -177,6 +177,8 @@ spotlight-go/
 
 ### 📥 导入快速入口
 
+首次安装会自动打开欢迎页：选择「导入我的网站」直接进入下方的导入流程，选择「自己设置」（或按 Esc）进入正常首页。做出选择后不再提示；更新扩展不会触发引导，之后仍可从设置中导入。
+
 在「设置 → 快速入口 → 导入」选择 iTab 备份（`.itabdata` 或相同结构的 `.json`）或浏览器导出的 HTML 书签文件，最大 10 MB。iTab 在「设置 → 备份与恢复」导出时需勾选「图标」。文件仅在本机解析，不会上传。
 
 导入前可预览新增网站，并查看重复和无效条目数量；超过 100 个网站时只展示前 100 个，确认后仍导入全部新增网站。只迁移网站名称、HTTP/HTTPS 网址及文件顺序，文件夹会展开，不迁移组件、自定义图标或其他设置。新增入口追加到末尾，重复网址跳过，已有入口保留。取消或文件解析失败不会修改数据，保存失败会提示重试。
@@ -364,6 +366,8 @@ spotlight-go/
 ---
 
 ### 📥 Import Quick Links
+
+A fresh installation opens a welcome page. Choose **Import my websites** to go straight to the import flow below, or **Set up myself** (or press Esc) to start using the homepage. Once you choose, the welcome page will not appear again. Extension updates do not trigger onboarding, and importing remains available in Settings.
 
 Open **Settings → Quick Links → Import** and select an iTab backup (`.itabdata` or `.json` with the same structure) or an exported browser HTML bookmark file, up to 10 MB. In iTab, export from **Settings → Backup and restore** with **Icons** selected. Files are parsed locally and are never uploaded.
 

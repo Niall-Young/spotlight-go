@@ -65,7 +65,7 @@
     }
   }
 
-  document.getElementById('nt-settings-import').addEventListener('click', () => {
+  function openImport() {
     generation++;
     parsed = result = null;
     errorKey = '';
@@ -75,6 +75,47 @@
     render();
     dialog.showModal();
     fileInput.focus();
+  }
+
+  document.getElementById('nt-settings-import').addEventListener('click', openImport);
+
+  const welcome = document.getElementById('nt-welcome-dialog');
+  const welcomeImport = document.getElementById('nt-welcome-import');
+  const welcomeSkip = document.getElementById('nt-welcome-skip');
+  const welcomeError = document.getElementById('nt-welcome-error');
+  let choosing = false;
+
+  async function finishWelcome(importNow) {
+    if (choosing) return;
+    choosing = true;
+    welcomeImport.disabled = welcomeSkip.disabled = true;
+    welcomeError.hidden = true;
+    try {
+      await storage('set', { onboardingPending: false });
+      welcome.close();
+      if (importNow) openImport();
+      else document.getElementById('nt-input').focus();
+    } catch (_) {
+      welcomeError.hidden = false;
+    } finally {
+      choosing = false;
+      welcomeImport.disabled = welcomeSkip.disabled = false;
+    }
+  }
+
+  welcomeImport.addEventListener('click', () => finishWelcome(true));
+  welcomeSkip.addEventListener('click', () => finishWelcome(false));
+  welcome.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    finishWelcome(false);
+  });
+  storage('get', 'onboardingPending').then((data) => {
+    if (data.onboardingPending === true) welcome.showModal();
+  }).catch(() => { /* Leave the normal homepage usable if storage is unavailable. */ });
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.onboardingPending?.newValue === false && welcome.open && !choosing) {
+      welcome.close();
+    }
   });
 
   fileInput.addEventListener('change', async () => {

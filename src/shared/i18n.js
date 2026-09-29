@@ -7,6 +7,14 @@
 
   const MESSAGES = {
     zh: {
+      'welcome.brand': 'Spotlight Go',
+      'welcome.title': '从你熟悉的网站开始',
+      'welcome.help': '导入 iTab 备份或浏览器书签，把常用网站带到新首页。也可以自己设置，慢慢添加。',
+      'welcome.import': '导入我的网站',
+      'welcome.skip': '自己设置',
+      'welcome.note': '以后随时可以在「设置 → 快速入口」中导入。',
+      'welcome.saveError': '保存选择失败，请重试。',
+
       "import.open": "导入",
       "import.title": "导入快速入口",
       "import.help": "支持 iTab 备份（.itabdata / .json）和浏览器 HTML 书签，最大 10 MB。iTab 请在「设置 → 备份与恢复」导出并勾选「图标」。仅导入网站，文件夹会展开；文件只在本机处理。",
@@ -93,6 +101,14 @@
       'overlay.esc': 'Esc 关闭'
     },
     en: {
+      'welcome.brand': 'Spotlight Go',
+      'welcome.title': 'Start with your favorite websites',
+      'welcome.help': 'Bring your websites along with an iTab backup or browser bookmarks. Or start fresh and add them yourself.',
+      'welcome.import': 'Import my websites',
+      'welcome.skip': 'Set up myself',
+      'welcome.note': 'You can always import later in Settings → Quick Links.',
+      'welcome.saveError': 'Could not save your choice. Please try again.',
+
       "import.open": "Import",
       "import.title": "Import quick links",
       "import.help": "Choose an iTab backup (.itabdata / .json) or browser HTML bookmarks, up to 10 MB. In iTab, export from Settings → Backup and restore with Icons selected. Only websites are imported; folders are flattened. Files stay on this device.",
