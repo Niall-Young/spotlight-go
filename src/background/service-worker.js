@@ -127,9 +127,15 @@ async function consumeSuggestions(query) {
   if (!q) return { groups: { suggestion: [] } };
   const entry = suggestionRequests.get(q);
   suggestionRequests.delete(q);
-  const suggestion = entry
+  const fetched = entry
     ? await entry.promise
     : await fetchSuggestions(q).catch(() => []);
+  // 原词置顶：联想接口只返回补全词，否则默认选中项会是补全词而非用户输入
+  const lower = q.toLowerCase();
+  const suggestion = [
+    { group: 'suggestion', title: q, query: q },
+    ...fetched.filter((s) => s.query.trim().toLowerCase() !== lower)
+  ].slice(0, LIMIT_PER_GROUP);
   return { groups: { suggestion } };
 }
 
