@@ -223,7 +223,8 @@
   }
 
   function isNavKey(event) {
-    return event.key === 'Escape' || event.key === 'Tab' || event.key === 'Enter';
+    return event.key === 'Escape' || event.key === 'Tab' || event.key === 'Enter' ||
+      event.key === 'ArrowUp' || event.key === 'ArrowDown';
   }
 
   // 统一的 window 捕获层按键处理。内容脚本 document_start 注册，捕获阶段
@@ -371,10 +372,11 @@
       return;
     }
     if (composing) return;
-    if (event.key === 'Tab') {
-      // Tab 向下选择、Shift+Tab 向上选择，焦点始终锁在浮层内
+    if (event.key === 'Tab' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      // Tab / ↓ 向下选择、Shift+Tab / ↑ 向上选择，焦点始终锁在浮层内
       event.preventDefault();
-      panel.moveSelection(event.shiftKey ? -1 : 1);
+      const direction = event.key === 'ArrowUp' || (event.key === 'Tab' && event.shiftKey) ? -1 : 1;
+      panel.moveSelection(direction);
       updateFooter(input.value.trim());
     } else if (event.key === 'Enter') {
       event.preventDefault();

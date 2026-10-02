@@ -94,6 +94,7 @@
 | :--- | :--- | :--- |
 | `Option + 空格` *(Mac)*<br>`Ctrl + Shift + K` *(Win/Linux)* | 任意网页 | 唤起 / 关闭聚焦搜索浮层 |
 | `Tab` / `Shift + Tab` | 搜索浮层 | 向下 / 向上移动选中项 |
+| `↓` / `↑` | 搜索浮层 | 向下 / 向上移动选中项 |
 | `↑` / `↓` | 新标签页 | 跨类别平滑导航搜索结果 |
 | `Enter` | 搜索浮层 / 新标签页 | 打开选中项 / 切换标签页 / 网址直达 / 执行网页搜索 |
 | `Esc` | 搜索浮层 | 关闭浮层 |
@@ -284,6 +285,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 | :--- | :--- | :--- |
 | `Option + Space` *(Mac)*<br>`Ctrl + Shift + K` *(Win/Linux)* | Any webpage | Open / Dismiss Spotlight Search Overlay |
 | `Tab` / `Shift + Tab` | Overlay | Move selection down / up through grouped search results |
+| `↓` / `↑` | Overlay | Move selection down / up through grouped search results |
 | `↑` / `↓` | New Tab | Navigate through grouped search results |
 | `Enter` | Overlay / New Tab | Open selected item / Switch tab / Direct URL navigation / Web search |
 | `Esc` | Overlay | Close the overlay |
