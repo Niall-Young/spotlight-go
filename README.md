@@ -61,6 +61,7 @@
   * 💡 **网页搜索建议**：实时拉取 Google 搜索建议（失败时无缝回退 Bing），异步追加至列表底部，体验丝滑流畅。
 * **智能去重与分组优先级**：严格遵循 `标签页 > 书签 > 历史记录` 优先级，同一 URL 跨组去重，避免信息杂乱。
 * **精准相关度排序算法**（`search-rank.js`）：
+  * 每个搜索词都须在标题、域名或路径中匹配；无匹配时不展示本地记录，仍可执行网页搜索；
   * 标题与域名的精准匹配及前缀匹配享有最高权重；
   * 智能结合历史访问次数、最近访问时间以及用户过往选择行为动态打分；
   * 本地结果零延迟即时渲染，不阻塞等待网络响应。
@@ -191,7 +192,7 @@ iTab 兼容以官方网页版的 `navConfig` / `children` 结构为依据；不�
 #### 开发验证
 
 ```sh
-node --test tests/shortcut-import.test.cjs
+node --test tests/*.test.cjs
 ```
 
 测试使用 Node.js 内置测试运行器，无需安装 npm 依赖。浏览器验证时重新加载扩展，检查导入预览、重复导入、取消、保存失败及重载后的数据留存，并回归普通页面浮层、受限页面回退和新标签页搜索。
@@ -256,6 +257,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
   * 💡 **Web Search Suggestions**: Real-time Google Suggestions (with automated fallback to Bing) streamed asynchronously to the end of the list.
 * **Smart Cross-Source Deduplication**: Follows strict precedence (`Tabs > Bookmarks > History`) so the same URL never repeats across groups.
 * **Intelligent Relevance Ranking**:
+  * Every search term must match the title, domain, or path; unmatched local records are excluded while web search remains available.
   * Exact & prefix matches on domain or title are heavily weighted.
   * Dynamically adjusted by visit counts, recency, and historical user selections.
   * Local results render with zero latency while web suggestions arrive asynchronously.
@@ -382,7 +384,7 @@ iTab compatibility targets the official web app's `navConfig` / `children` struc
 #### Development Verification
 
 ```sh
-node --test tests/shortcut-import.test.cjs
+node --test tests/*.test.cjs
 ```
 
 Tests use Node.js's built-in test runner without npm dependencies. Reload the extension for browser checks: preview, repeated imports, cancellation, save failures and persistence after reload, plus ordinary-page overlay, restricted-page fallback and new-tab search regression checks.

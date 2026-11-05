@@ -72,6 +72,11 @@
     } catch (_) {
       hostname = String(url || '').toLowerCase();
     }
+    // 每个词都必须命中，不能让单个常见词或后续行为加分保留无关结果
+    if (!terms.every((term) =>
+      t.includes(term) || hostname.includes(term) || path.includes(term)
+    )) return 0;
+
     if (hostname) {
       const labels = hostname.split('.').filter(Boolean);
       if (labels.includes(q)) score += 42;
