@@ -58,10 +58,7 @@
     input.setAttribute('aria-label', i18n.t('app.name'));
     const box = shadow.querySelector('.sg-overlay-panel');
     if (box) box.setAttribute('aria-label', i18n.t('app.name'));
-    const esc = shadow.querySelector('.sg-overlay-esc');
-    if (esc) esc.textContent = i18n.t('overlay.esc');
     if (panel) panel.repaint();
-    updateFooter(input.value.trim());
   }
 
   i18n.init(applyLang);
@@ -323,31 +320,17 @@
   function sendSearch(query) {
     const seq = ++searchSeq;
     panel.clear();
-    updateFooter(query);
     // 本地结果先行渲染；网络建议由后台预取，随后合并到列表尾部
     chrome.runtime.sendMessage({ type: 'search', query }, (response) => {
       if (chrome.runtime.lastError) return;
       if (seq !== searchSeq || !panel || query !== input.value.trim()) return;
       panel.render(response?.groups, query);
-      updateFooter(query);
       chrome.runtime.sendMessage({ type: 'search-suggestions', query }, (res) => {
         if (chrome.runtime.lastError) return;
         if (seq !== searchSeq || !panel || query !== input.value.trim()) return;
         panel.mergeGroups({ suggestion: res?.groups?.suggestion || [] }, query);
-        updateFooter(query);
       });
     });
-  }
-
-  function updateFooter(query) {
-    if (!shadow) return;
-    const footer = shadow.querySelector('.sg-overlay-footer-text');
-    if (!footer) return;
-    footer.textContent = query
-      ? panel.hasItems()
-        ? i18n.t('overlay.footerSelect')
-        : i18n.t('overlay.footerSearch', { query })
-      : i18n.t('overlay.footerIdle');
   }
 
   function openDirectSearch(query) {
@@ -379,7 +362,6 @@
       event.preventDefault();
       const direction = event.key === 'ArrowUp' || (event.key === 'Tab' && event.shiftKey) ? -1 : 1;
       panel.moveSelection(direction);
-      updateFooter(input.value.trim());
     } else if (event.key === 'Enter') {
       event.preventDefault();
       const selected = panel.getSelected();
@@ -400,7 +382,6 @@
     if (!query) {
       searchSeq++;
       panel.clear();
-      updateFooter('');
       return;
     }
     sendSearch(query);
@@ -463,7 +444,6 @@
       composing = true;
       searchSeq++;
       panel.clear();
-      updateFooter(input.value.trim());
     });
     input.addEventListener('compositionend', () => {
       composing = false;
@@ -475,19 +455,8 @@
     results.className = 'sg-results sg-overlay-results';
     results.setAttribute('role', 'listbox');
 
-    const footer = document.createElement('div');
-    footer.className = 'sg-overlay-footer';
-    const footerText = document.createElement('span');
-    footerText.className = 'sg-overlay-footer-text';
-    footer.appendChild(footerText);
-    const esc = document.createElement('span');
-    esc.className = 'sg-overlay-esc';
-    esc.textContent = i18n.t('overlay.esc');
-    footer.appendChild(esc);
-
     box.appendChild(header);
     box.appendChild(results);
-    box.appendChild(footer);
 
     // 面板包一层定位容器，贴纸装饰（仅少女粉样式显示）探出面板右上角
     const wrap = document.createElement('div');
@@ -512,7 +481,6 @@
     // 兜底：页面若用 capture 监听抢走焦点，立刻抢回来
     document.addEventListener('focusin', keepFocus, true);
 
-    updateFooter('');
     // 同步聚焦并灌入缓冲字符，不再等下一帧（等待期间按键会丢给宿主页面）
     input.focus();
     flushKeyBuffer();

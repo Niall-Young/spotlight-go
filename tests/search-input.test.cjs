@@ -17,13 +17,13 @@ for (const surface of ['newtab', 'overlay']) {
       mergeGroups(groups) { selected ||= groups?.suggestion?.[0] || null; }
     };
     const context = vm.createContext({
-      input, panel, searchSeq: 0, composing: false, updateFooter() {},
+      input, panel, searchSeq: 0, composing: false,
       chrome: { runtime: { sendMessage(message, callback) { requests.push({ message, callback }); } } }
     });
     // Execute the production search handlers with delayed message replies and input events.
     const start = source.indexOf('  function sendSearch(query)');
     const end = source.indexOf(surface === 'newtab'
-      ? "  input.addEventListener('keydown'" : '  function updateFooter', start);
+      ? "  input.addEventListener('keydown'" : '  function openDirectSearch', start);
     vm.runInContext(source.slice(start, end), context);
     if (surface === 'overlay') {
       const inputStart = source.indexOf('  function onInput()');

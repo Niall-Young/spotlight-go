@@ -98,33 +98,6 @@
   display: none;
 }
 
-.sg-overlay-footer {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 16px;
-  border-top: 1px solid var(--sg-divider);
-  font-size: 11.5px;
-  color: var(--sg-text-secondary);
-  user-select: none;
-}
-
-.sg-overlay-footer-text {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sg-overlay-esc {
-  flex: 0 0 auto;
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-}
-
 /* 深色：跟随系统（未显式选择亮色）且系统为深色，或显式选择暗色。
    主题由 overlay.js 按 themeMode 设置 mask 的 data-sg-theme 属性。 */
 @media (prefers-color-scheme: dark) {
@@ -153,10 +126,6 @@
     color: rgba(255, 255, 255, 0.3);
   }
 
-  .sg-overlay-mask:not([data-sg-theme="light"]) .sg-overlay-esc {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
 }
 
 .sg-overlay-mask[data-sg-theme="dark"] {
@@ -182,11 +151,6 @@
 
 .sg-overlay-mask[data-sg-theme="dark"] .sg-overlay-input::placeholder {
   color: rgba(255, 255, 255, 0.3);
-}
-
-.sg-overlay-mask[data-sg-theme="dark"] .sg-overlay-esc {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* ===== 样式：简约黑白（neutral）—— 纯色平面，无半透明、无模糊、无边框 ===== */
@@ -241,11 +205,6 @@
   color: rgba(20, 20, 19, 0.32);
 }
 
-.sg-overlay-mask[data-sg-style="paper"] .sg-overlay-esc {
-  background: rgba(20, 20, 19, 0.06);
-  border-color: transparent;
-}
-
 .sg-overlay-mask[data-sg-style="paper"][data-sg-theme="dark"] {
   --sg-text: #faf9f5;
   --sg-text-secondary: rgba(250, 249, 245, 0.5);
@@ -265,11 +224,6 @@
 
 .sg-overlay-mask[data-sg-style="paper"][data-sg-theme="dark"] .sg-overlay-input::placeholder {
   color: rgba(250, 249, 245, 0.3);
-}
-
-.sg-overlay-mask[data-sg-style="paper"][data-sg-theme="dark"] .sg-overlay-esc {
-  background: rgba(250, 249, 245, 0.08);
-  border-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -294,10 +248,6 @@
     color: rgba(250, 249, 245, 0.3);
   }
 
-  .sg-overlay-mask[data-sg-style="paper"]:not([data-sg-theme="light"]) .sg-overlay-esc {
-    background: rgba(250, 249, 245, 0.08);
-    border-color: transparent;
-  }
 }
 
 /* ===== 样式：少女粉（pink）—— 贴纸风纯色平面，无半透明、无模糊 ===== */
@@ -331,11 +281,6 @@
 
 .sg-overlay-mask[data-sg-style="pink"] .sg-overlay-input::placeholder {
   color: rgba(90, 54, 68, 0.35);
-}
-
-.sg-overlay-mask[data-sg-style="pink"] .sg-overlay-esc {
-  background: rgba(232, 90, 138, 0.12);
-  border-color: transparent;
 }
 
 .sg-overlay-mask[data-sg-style="pink"] .sg-overlay-deco {
@@ -388,11 +333,6 @@
   color: rgba(250, 233, 241, 0.3);
 }
 
-.sg-overlay-mask[data-sg-style="pink"][data-sg-theme="dark"] .sg-overlay-esc {
-  background: rgba(250, 233, 241, 0.08);
-  border-color: transparent;
-}
-
 @media (prefers-color-scheme: dark) {
   .sg-overlay-mask[data-sg-style="pink"]:not([data-sg-theme="light"]) {
     --sg-text: #fae9f1;
@@ -418,8 +358,4 @@
     color: rgba(250, 233, 241, 0.3);
   }
 
-  .sg-overlay-mask[data-sg-style="pink"]:not([data-sg-theme="light"]) .sg-overlay-esc {
-    background: rgba(250, 233, 241, 0.08);
-    border-color: transparent;
-  }
 }

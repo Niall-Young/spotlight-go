@@ -53,6 +53,7 @@
 ### ✨ 功能特性
 
 #### 🔍 全局聚焦搜索浮层（Spotlight Overlay）
+* **精简搜索面板**：只保留搜索框与结果列表，不显示底部操作提示栏
 * **全页面随时唤起**：全局快捷键一键唤出（Mac: `Option + 空格`，Windows/Linux: `Ctrl + Shift + K`）。
 * **四大数据源多维聚合**：
   * 📑 **打开的标签页**：回车即可秒级切换回已有标签，无需重复新建标签浪费系统内存。
@@ -250,6 +251,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 ### ✨ Key Features
 
 #### 🔍 Global Spotlight Search Overlay
+* **Compact Search Panel**: Shows only the search input and results, without a footer hint bar.
 * **Summon from Anywhere**: Single global hotkey (`Option + Space` on Mac, `Ctrl + Shift + K` on Windows/Linux).
 * **Multi-Source Unified Results**:
   * 📑 **Open Tabs**: Switch directly to existing tabs (`Enter`) rather than reopening duplicates.

@@ -93,11 +93,7 @@
       'hint.suggestion': '搜索',
       'hint.tab': '切换',
       'hint.open': '打开',
-      'overlay.placeholder': '搜索标签页、书签、历史与网页…',
-      'overlay.footerIdle': '输入以搜索标签页、书签、历史与网页',
-      'overlay.footerSelect': '↑ ↓ / Tab 选择 · Enter 打开',
-      'overlay.footerSearch': 'Enter 搜索 “{query}”',
-      'overlay.esc': 'Esc 关闭'
+      'overlay.placeholder': '搜索标签页、书签、历史与网页…'
     },
     en: {
       'welcome.title': 'Set up your homepage',
@@ -186,11 +182,7 @@
       'hint.suggestion': 'Search',
       'hint.tab': 'Switch',
       'hint.open': 'Open',
-      'overlay.placeholder': 'Search tabs, bookmarks, history and the web…',
-      'overlay.footerIdle': 'Type to search tabs, bookmarks, history and the web',
-      'overlay.footerSelect': '↑ ↓ / Tab to select · Enter to open',
-      'overlay.footerSearch': 'Enter to search “{query}”',
-      'overlay.esc': 'Esc to close'
+      'overlay.placeholder': 'Search tabs, bookmarks, history and the web…'
     }
   };
 
