@@ -26,7 +26,7 @@ class Element {
   }
 }
 
-function setup() {
+function setup(container = new Element()) {
   const context = vm.createContext({
     URL,
     chrome: { runtime: { getURL: value => value } },
@@ -37,8 +37,29 @@ function setup() {
     }
   });
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/shared/results-panel.js'), 'utf8'), context);
-  return context.SpotlightResults.create(new Element());
+  return context.SpotlightResults.create(container);
 }
+
+test('keyboard navigation reaches full scroll boundaries including trailing padding', () => {
+  const container = new Element();
+  container.scrollHeight = 900;
+  container.scrollTop = 120;
+  const panel = setup(container);
+  panel.render({ suggestion: [
+    { title: 'First', query: 'first' },
+    { title: 'Last', query: 'last' }
+  ] }, 'query');
+  panel.moveSelection(-1);
+  assert.equal(container.scrollTop, 0);
+  panel.moveSelection(1);
+  assert.equal(container.scrollTop, container.scrollHeight);
+  // 手动滚开后，再按到边界依然能恢复到完整的底部。
+  container.scrollTop = 100;
+  panel.moveSelection(1);
+  assert.equal(container.scrollTop, container.scrollHeight);
+  panel.moveSelection(-1);
+  assert.equal(container.scrollTop, 0);
+});
 
 test('keyboard navigation stops at either end and still moves across groups', () => {
   const panel = setup();

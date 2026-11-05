@@ -62,6 +62,10 @@
     let suggestionsPending = false;
 
     function setSelected(index, scroll) {
+      // 首尾需滚完分组和容器的留白，而不只是把结果行露出来。
+      // 即使选中项没变，也允许再次导航回到真实边界。
+      if (scroll && index === 0) container.scrollTop = 0;
+      else if (scroll && index === items.length - 1) container.scrollTop = container.scrollHeight;
       if (index === selectedIndex) return;
       const nodes = container.querySelectorAll('.sg-item');
       if (nodes[selectedIndex]) {
@@ -73,7 +77,9 @@
       if (node) {
         node.classList.add('sg-selected');
         node.setAttribute('aria-selected', 'true');
-        if (scroll) node.scrollIntoView({ block: 'nearest' });
+        if (scroll && index > 0 && index < items.length - 1) {
+          node.scrollIntoView({ block: 'nearest' });
+        }
       }
       if (opts.onSelectionChange) opts.onSelectionChange(getSelected());
     }

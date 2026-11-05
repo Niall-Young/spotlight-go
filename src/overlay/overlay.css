@@ -37,7 +37,7 @@
   max-height: min(480px, 70vh);
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
+  border-radius: 24px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.62);
   backdrop-filter: blur(40px) saturate(1.6);
@@ -61,6 +61,7 @@
 }
 
 .sg-overlay-header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -87,10 +88,13 @@
 }
 
 .sg-overlay-results {
+  --sg-item-radius: 12px;
+  --sg-results-end-padding: 0px;
   flex: 1 1 auto;
   min-height: 0;
   max-height: 340px;
-  padding: 2px 0 8px;
+  padding: 2px 0 0;
+  margin-bottom: 6px;
   border-top: 1px solid var(--sg-divider);
 }
 
