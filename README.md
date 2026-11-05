@@ -65,6 +65,7 @@
   * 标题与域名的精准匹配及前缀匹配享有最高权重；
   * 智能结合历史访问次数、最近访问时间以及用户过往选择行为动态打分；
   * 本地结果零延迟即时渲染，不阻塞等待网络响应。
+  * 输入变化即清除旧结果，忽略过期响应；输入法选词结束后按最终文字重新搜索。
 * **按键即刻捕获**：唤起浮层时瞬间保存首个按键输入，杜绝输入法与快速敲击导致的丢字丢词。
 * **不打断当前页面**：从浮层打开任何结果或发起网页搜索都会在新标签页中进行，当前页面始终保持原样（已有标签页仍直接切换）。
 * **特权页面智能回退**：在 Chrome 限制页面（如 `chrome://extensions`）中触发时，自动回退打开新标签页并聚焦搜索框。
@@ -261,6 +262,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
   * Exact & prefix matches on domain or title are heavily weighted.
   * Dynamically adjusted by visit counts, recency, and historical user selections.
   * Local results render with zero latency while web suggestions arrive asynchronously.
+  * Input changes clear previous results and discard stale replies; completing IME composition searches the final text.
 * **Input-Safe Trigger**: Preserves your keystrokes immediately upon invocation—no dropped characters even when typing quickly.
 * **Non-Disruptive Opening**: Results and web searches opened from the overlay always spawn a new tab—your current page is never navigated away (existing tabs are still switched to directly).
 * **Privileged Page Fallback**: When pressed on non-injectable internal pages (such as `chrome://`), automatically falls back to opening the new tab page and focusing the search bar.

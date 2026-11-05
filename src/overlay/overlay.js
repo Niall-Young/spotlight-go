@@ -322,15 +322,17 @@
 
   function sendSearch(query) {
     const seq = ++searchSeq;
+    panel.clear();
+    updateFooter(query);
     // 本地结果先行渲染；网络建议由后台预取，随后合并到列表尾部
     chrome.runtime.sendMessage({ type: 'search', query }, (response) => {
       if (chrome.runtime.lastError) return;
-      if (seq !== searchSeq || !panel) return;
+      if (seq !== searchSeq || !panel || query !== input.value.trim()) return;
       panel.render(response?.groups, query);
       updateFooter(query);
       chrome.runtime.sendMessage({ type: 'search-suggestions', query }, (res) => {
         if (chrome.runtime.lastError) return;
-        if (seq !== searchSeq || !panel) return;
+        if (seq !== searchSeq || !panel || query !== input.value.trim()) return;
         panel.mergeGroups({ suggestion: res?.groups?.suggestion || [] }, query);
         updateFooter(query);
       });
@@ -459,9 +461,13 @@
     input.addEventListener('input', onInput);
     input.addEventListener('compositionstart', () => {
       composing = true;
+      searchSeq++;
+      panel.clear();
+      updateFooter(input.value.trim());
     });
     input.addEventListener('compositionend', () => {
       composing = false;
+      onInput();
     });
     header.appendChild(input);
 

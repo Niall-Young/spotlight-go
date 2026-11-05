@@ -11,6 +11,11 @@ test('partial multi-word matches are rejected in titles and domains', () => {
   assert.equal(Rank.scoreTextMatch('设计资源', 'https://design.example', '设计 新产品'), 0);
   assert.equal(Rank.scoreTextMatch('邮件', 'https://mail.example.com', 'example unknown'), 0);
   assert.equal(Rank.scoreTextMatch('AI tools', 'https://tools.example', 'totallynewtopic ai'), 0);
+  for (const [title, url] of [
+    ['扩展程序 - spotlight-go', 'chrome://extensions'],
+    ['Home / X', 'https://x.com/home'],
+    ['消息中心 - bilibili', 'https://message.bilibili.com']
+  ]) assert.equal(Rank.scoreTextMatch(title, url, 'e 签宝'), 0);
 });
 
 test('all terms may match across the title, domain and path', () => {

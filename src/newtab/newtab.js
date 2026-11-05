@@ -291,20 +291,21 @@
 
   function sendSearch(query) {
     const seq = ++searchSeq;
+    panel.clear();
     // 本地结果先行渲染；网络建议由后台预取，随后合并到列表尾部
     chrome.runtime.sendMessage({ type: 'search', query }, (response) => {
       if (chrome.runtime.lastError) return;
-      if (seq !== searchSeq) return;
+      if (seq !== searchSeq || query !== input.value.trim()) return;
       panel.render(response?.groups, query);
       chrome.runtime.sendMessage({ type: 'search-suggestions', query }, (res) => {
         if (chrome.runtime.lastError) return;
-        if (seq !== searchSeq) return;
+        if (seq !== searchSeq || query !== input.value.trim()) return;
         panel.mergeGroups({ suggestion: res?.groups?.suggestion || [] }, query);
       });
     });
   }
 
-  input.addEventListener('input', () => {
+  function onInput() {
     const query = input.value.trim();
     if (!query) {
       searchSeq++;
@@ -312,7 +313,9 @@
       return;
     }
     sendSearch(query);
-  });
+  }
+
+  input.addEventListener('input', onInput);
 
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
@@ -345,9 +348,12 @@
 
   input.addEventListener('compositionstart', () => {
     composing = true;
+    searchSeq++;
+    panel.clear();
   });
   input.addEventListener('compositionend', () => {
     composing = false;
+    onInput();
   });
 
   // ---------- 快捷方式 ----------
