@@ -40,6 +40,29 @@ function setup() {
   return context.SpotlightResults.create(new Element());
 }
 
+test('keyboard navigation stops at either end and still moves across groups', () => {
+  const panel = setup();
+  panel.render({
+    tab: [{ title: 'First', tabId: 1 }],
+    bookmark: [{ title: 'Middle', url: 'https://middle.example' }],
+    suggestion: [{ title: 'Last', query: 'last' }]
+  }, 'query');
+  panel.moveSelection(-1);
+  panel.moveSelection(-1);
+  assert.equal(panel.getSelected().tabId, 1);
+  panel.moveSelection(1);
+  assert.equal(panel.getSelected().group, 'bookmark');
+  panel.moveSelection(1);
+  assert.equal(panel.getSelected().group, 'suggestion');
+  panel.moveSelection(1);
+  panel.moveSelection(1);
+  assert.equal(panel.getSelected().group, 'suggestion');
+  panel.moveSelection(-1);
+  assert.equal(panel.getSelected().group, 'bookmark');
+  panel.moveSelection(-1);
+  assert.equal(panel.getSelected().tabId, 1);
+});
+
 test('suggestion merges and language repaints preserve the selected local result', () => {
   const panel = setup();
   const groups = { tab: [

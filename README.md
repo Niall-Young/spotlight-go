@@ -105,6 +105,8 @@
 | `Esc` | 搜索浮层 | 关闭浮层 |
 | *右键点击瓦片* | 新标签页 | 呼出快捷方式管理菜单（编辑 / 删除 / 新标签页打开） |
 
+搜索结果的键盘导航到首项或末项时停留，不循环跳转
+
 > [!TIP]
 > 在设置弹窗中点击「更改」，按下新的组合键并保存即可生效（Chrome 不允许扩展程序化改键，自定义绑定由扩展在页面内监听实现）；浏览器级默认快捷键仍由 Chrome 保留，可在 `chrome://extensions/shortcuts` 查看管理，并在 `chrome://` 等不可注入页面继续作为回退唤起方式。注意：浏览器级快捷键本身会被 Chrome 在浏览器层拦截，页面收不到按键事件，无法录入到捕获框中（录入期间该按键会被暂时忽略，不会触发唤起）。注意：浏览器级快捷键本身会被 Chrome 在浏览器层拦截，页面收不到按键事件，无法录入到捕获框中（录入期间该按键会被暂时忽略，不会触发唤起）。
 
@@ -300,6 +302,8 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 | `Enter` | Overlay / New Tab | Open selected item / Switch tab / Direct URL navigation / Web search |
 | `Esc` | Overlay | Close the overlay |
 | *Right-Click* | New Tab Tile | Open context menu (Edit / Delete / Open in new tab) |
+
+Keyboard navigation stops at the first and last search results without wrapping.
 
 > [!TIP]
 > Click **更改** (Change) in the settings modal, press a new key combo, and save — the overlay then listens for it on regular pages. Chrome does not allow extensions to reprogram browser-level shortcuts, so the default hotkey remains active as a fallback (including on `chrome://` pages) and can still be managed at `chrome://extensions/shortcuts`. The browser-level hotkey itself is intercepted by Chrome before the page sees it, so it cannot be captured in the press-to-capture box; it is temporarily ignored while you are recording a new combo.

@@ -212,7 +212,7 @@
 
     function moveSelection(delta) {
       if (queryPending || items.length === 0) return;
-      const next = (selectedIndex + delta + items.length) % items.length;
+      const next = Math.max(0, Math.min(selectedIndex + delta, items.length - 1));
       setSelected(next, true);
     }
 
