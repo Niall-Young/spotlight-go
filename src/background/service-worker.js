@@ -95,7 +95,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
   if (message?.type === 'open') {
-    openItem(message.item, message.query).then(sendResponse);
+    openItem(message.item, message.query, message.disposition).then(sendResponse);
     return true;
   }
   if (message?.type === 'record-selection') {
@@ -133,7 +133,7 @@ async function consumeSuggestions(query) {
   // 原词置顶：联想接口只返回补全词，否则默认选中项会是补全词而非用户输入
   const lower = q.toLowerCase();
   const suggestion = [
-    { group: 'suggestion', title: q, query: q },
+    { group: 'suggestion', type: 'direct-search', title: q, query: q },
     ...fetched.filter((s) => s.query.trim().toLowerCase() !== lower)
   ].slice(0, LIMIT_PER_GROUP);
   return { groups: { suggestion } };
@@ -167,21 +167,28 @@ async function localSearch(query) {
 
   const stats = await loadSelectionStats();
   const sources = await loadSearchSources();
-  const [tab, bookmark, history] = await Promise.all([
+  const settled = await Promise.allSettled([
     sources.tab ? searchTabs(q, stats) : [],
     sources.bookmark ? searchBookmarks(q, stats) : [],
     sources.history ? searchHistory(q, stats) : []
   ]);
+  const [tab, bookmark, history] = settled.map((result) =>
+    result.status === 'fulfilled' ? result.value : []
+  );
 
   // 跨组去重：tab > bookmark > history
   const seen = new Set();
   for (const list of [tab, bookmark, history]) {
-    for (let i = list.length - 1; i >= 0; i--) {
-      if (!list[i].url) continue;
-      const key = Rank.normalizeUrlKey(list[i].url);
-      if (seen.has(key)) list.splice(i, 1);
-      else seen.add(key);
-    }
+    const inGroup = new Set();
+    const unique = list.filter((item) => {
+      if (!item.url) return false;
+      const key = Rank.normalizeUrlKey(item.url);
+      if (seen.has(key) || inGroup.has(key)) return false;
+      inGroup.add(key);
+      return true;
+    }).slice(0, LIMIT_PER_GROUP);
+    list.splice(0, list.length, ...unique);
+    for (const item of unique) seen.add(Rank.normalizeUrlKey(item.url));
   }
 
   return { groups: { tab, bookmark, history } };
@@ -214,8 +221,7 @@ async function searchTabs(q, stats) {
       };
     })
     .filter(Boolean)
-    .sort(Rank.compareItems)
-    .slice(0, LIMIT_PER_GROUP);
+    .sort(Rank.compareItems);
 }
 
 async function searchBookmarks(q, stats) {
@@ -233,8 +239,7 @@ async function searchBookmarks(q, stats) {
       return { group: 'bookmark', title: b.title || b.url, url: b.url, score };
     })
     .filter(Boolean)
-    .sort(Rank.compareItems)
-    .slice(0, LIMIT_PER_GROUP);
+    .sort(Rank.compareItems);
 }
 
 async function searchHistory(q, stats) {
@@ -263,40 +268,35 @@ async function searchHistory(q, stats) {
       };
     })
     .filter(Boolean)
-    .sort(Rank.compareItems)
-    .slice(0, LIMIT_PER_GROUP);
+    .sort(Rank.compareItems);
 }
 
 // ---------- 搜索建议（网络） ----------
 
 async function fetchSuggestions(query) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), SUGGESTION_TIMEOUT_MS);
-  try {
-    let texts = [];
+  const endpoints = [
+    `https://www.google.com/complete/search?client=chrome&q=${encodeURIComponent(query)}`,
+    `https://www.bing.com/osjson.aspx?query=${encodeURIComponent(query)}`
+  ];
+  for (const endpoint of endpoints) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), SUGGESTION_TIMEOUT_MS);
     try {
-      const res = await fetch(
-        `https://www.google.com/complete/search?client=chrome&q=${encodeURIComponent(query)}`,
-        { signal: controller.signal }
-      );
+      const res = await fetch(endpoint, { signal: controller.signal });
+      if (res.ok === false) throw new Error('Suggestion request failed');
       const data = await res.json();
-      texts = Array.isArray(data?.[1]) ? data[1] : [];
+      if (!Array.isArray(data?.[1])) throw new Error('Invalid suggestions');
+      return data[1].filter((text) => typeof text === 'string' && text.trim())
+        .slice(0, LIMIT_PER_GROUP).map((text) => ({
+          group: 'suggestion', title: text, query: text
+        }));
     } catch (_) {
-      const res = await fetch(
-        `https://www.bing.com/osjson.aspx?query=${encodeURIComponent(query)}`,
-        { signal: controller.signal }
-      );
-      const data = await res.json();
-      texts = Array.isArray(data?.[1]) ? data[1] : [];
+      // 每个服务独立超时，前一个被 abort 后仍能请求下一个
+    } finally {
+      clearTimeout(timer);
     }
-    return texts.slice(0, LIMIT_PER_GROUP).map((text) => ({
-      group: 'suggestion',
-      title: String(text),
-      query: String(text)
-    }));
-  } finally {
-    clearTimeout(timer);
   }
+  return [];
 }
 
 // ---------- 选择统计（影响后续排序） ----------
@@ -357,8 +357,19 @@ async function recordSelection(query, url) {
 
 // ---------- 打开结果 ----------
 
-async function openItem(item, query) {
+function directUrl(text) {
+  if (!text || /\s/.test(text)) return null;
+  try {
+    const url = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(text) ? text : 'https://' + text);
+    if (!['http:', 'https:'].includes(url.protocol)) return null;
+    if (!url.hostname.includes('.') && url.hostname !== 'localhost') return null;
+    return url.href;
+  } catch (_) { return null; }
+}
+
+async function openItem(item, query, disposition) {
   if (!item) return { ok: false };
+  const target = disposition === 'CURRENT_TAB' ? 'CURRENT_TAB' : 'NEW_TAB';
   if (item.group === 'tab' && item.tabId != null) {
     await chrome.tabs.update(item.tabId, { active: true });
     if (item.windowId != null) {
@@ -368,11 +379,17 @@ async function openItem(item, query) {
     return { ok: true };
   }
   if (item.group === 'suggestion' || item.type === 'direct-search') {
-    await chrome.search.query({ text: item.query || item.title || '', disposition: 'NEW_TAB' });
+    const text = item.query || item.title || '';
+    const url = item.type === 'direct-search' ? directUrl(text) : null;
+    if (url) {
+      if (target === 'CURRENT_TAB') await chrome.tabs.update({ url });
+      else await chrome.tabs.create({ url, active: true });
+    } else await chrome.search.query({ text, disposition: target });
     return { ok: true };
   }
   if (item.url) {
-    await chrome.tabs.create({ url: item.url, active: true });
+    if (target === 'CURRENT_TAB') await chrome.tabs.update({ url: item.url });
+    else await chrome.tabs.create({ url: item.url, active: true });
     await recordSelection(query || '', item.url);
     return { ok: true };
   }

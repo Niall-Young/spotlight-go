@@ -18,10 +18,9 @@
       const params = [...u.searchParams.entries()]
         .filter(([k]) => !TRACKING_PARAMS.has(k.toLowerCase()))
         .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-      const query = params.length
-        ? '?' + params.map(([k, v]) => k + '=' + v).join('&')
-        : '';
-      return u.protocol.toLowerCase() + '//' + host + port + path + query;
+      const query = new URLSearchParams(params).toString();
+      return u.protocol.toLowerCase() + '//' + host + port + path +
+        (query ? '?' + query : '') + u.hash;
     } catch (_) {
       return String(url || '').toLowerCase();
     }
@@ -68,13 +67,17 @@
     try {
       const u = new URL(url);
       hostname = u.hostname.toLowerCase().replace(/^www\./, '');
-      path = u.pathname.toLowerCase();
+      path = u.pathname + u.search + u.hash;
+      try { path = decodeURIComponent(path); } catch (_) {}
+      path = path.toLowerCase();
     } catch (_) {
       hostname = String(url || '').toLowerCase();
     }
+    const fullUrl = String(url || '').toLowerCase();
+    const urlTermMatches = (term) => /[:/?#]/.test(term) && fullUrl.includes(term);
     // 每个词都必须命中，不能让单个常见词或后续行为加分保留无关结果
     if (!terms.every((term) =>
-      t.includes(term) || hostname.includes(term) || path.includes(term)
+      t.includes(term) || hostname.includes(term) || path.includes(term) || urlTermMatches(term)
     )) return 0;
 
     if (hostname) {
@@ -84,7 +87,11 @@
       else if (hostname.includes(q)) score += 10;
       score += scoreWords(labels, terms, 24, 14, 6);
     }
-    if (path && path !== '/' && path.includes(q)) score += 10;
+    if (path && path !== '/') {
+      score += scoreWords(splitWords(path), terms, 10, 6, 3);
+      if (path.includes(q)) score += 10;
+    }
+    if (terms.some(urlTermMatches)) score += 10;
 
     return score;
   }

@@ -146,6 +146,7 @@
     }
 
     function paint(query) {
+      const previous = currentQuery === (query || '') ? getSelected() : null;
       currentQuery = query || '';
       items = [];
       selectedIndex = -1;
@@ -169,7 +170,13 @@
         }
         container.appendChild(groupEl);
       }
-      if (items.length > 0) setSelected(0, false);
+      if (items.length > 0) {
+        const previousIndex = previous ? items.findIndex((item) =>
+          item.group === previous.group && item.url === previous.url &&
+          item.tabId === previous.tabId && item.query === previous.query
+        ) : -1;
+        setSelected(previousIndex >= 0 ? previousIndex : 0, false);
+      }
     }
 
     function moveSelection(delta) {

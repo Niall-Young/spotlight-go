@@ -31,6 +31,14 @@ for (const surface of ['newtab', 'overlay']) {
     }
     const composition = source.match(/input\.addEventListener\('compositionstart',[\s\S]*?input\.addEventListener\('compositionend',[\s\S]*?\n\s*}\);/)[0];
     vm.runInContext(composition, context);
+    if (surface === 'newtab') {
+      const keyStart = source.indexOf("  input.addEventListener('keydown'");
+      vm.runInContext(source.slice(keyStart, source.indexOf("  input.addEventListener('compositionstart'", keyStart)), context);
+    } else {
+      const keyStart = source.indexOf('  function handleKeydown');
+      vm.runInContext(source.slice(keyStart, source.indexOf('  function onInput', keyStart)), context);
+      listeners.keydown = context.handleKeydown;
+    }
     return { input, requests, listeners, context, selected: () => selected };
   }
 
@@ -67,5 +75,16 @@ for (const surface of ['newtab', 'overlay']) {
     s.input.value = 'e 签宝';
     s.requests[0].callback({ groups: { tab: [{ title: 'Extensions' }] } });
     assert.equal(s.selected(), null);
+  });
+
+  test(`${surface}: IME Enter and Escape never trigger extension actions`, () => {
+    const s = setup();
+    for (const event of [
+      { key: 'Enter', isComposing: true },
+      { key: 'Enter', keyCode: 229 },
+      { key: 'Escape', isComposing: true }
+    ]) s.listeners.keydown({ ...event, preventDefault() { assert.fail('IME key intercepted'); } });
+    assert.equal(s.requests.length, 0);
+    assert.equal(s.input.value, 'e');
   });
 }

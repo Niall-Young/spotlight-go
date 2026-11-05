@@ -252,41 +252,19 @@
 
   // ---------- 搜索 ----------
 
-  function looksLikeUrl(text) {
-    return /^([a-z][a-z0-9+.-]*:\/\/)?[^\s.]+\.[^\s]{2,}(\/\S*)?$/i.test(text);
-  }
-
   function normalizeUrl(text) {
     return /^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : 'https://' + text;
   }
 
   function openItem(item) {
     if (!item) return;
-    if (item.url) {
-      chrome.runtime.sendMessage({
-        type: 'record-selection',
-        query: input.value.trim(),
-        url: item.url
-      });
-    }
-    if (item.group === 'tab' && item.tabId != null) {
-      chrome.tabs.update(item.tabId, { active: true });
-      if (item.windowId != null) chrome.windows.update(item.windowId, { focused: true });
-      return;
-    }
-    if (item.group === 'suggestion' || item.type === 'direct-search') {
-      chrome.search.query({ text: item.query || item.title || '', disposition: 'CURRENT_TAB' });
-      return;
-    }
-    if (item.url) location.href = item.url;
+    chrome.runtime.sendMessage({
+      type: 'open', item, query: input.value.trim(), disposition: 'CURRENT_TAB'
+    });
   }
 
   function doDirectSearch(query) {
-    if (looksLikeUrl(query)) {
-      location.href = normalizeUrl(query);
-    } else {
-      chrome.search.query({ text: query, disposition: 'CURRENT_TAB' });
-    }
+    openItem({ type: 'direct-search', query });
   }
 
   function sendSearch(query) {
@@ -318,6 +296,7 @@
   input.addEventListener('input', onInput);
 
   input.addEventListener('keydown', (event) => {
+    if (composing || event.isComposing || event.keyCode === 229) return;
     if (event.key === 'Escape') {
       if (panel.hasItems() || input.value) {
         event.preventDefault();
@@ -327,7 +306,6 @@
       }
       return;
     }
-    if (composing) return;
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       panel.moveSelection(1);

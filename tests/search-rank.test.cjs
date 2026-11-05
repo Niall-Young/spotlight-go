@@ -32,6 +32,23 @@ test('single-term matching and exact-match priority are preserved', () => {
   assert.equal(Rank.scoreTextMatch('Design', 'https://example.test', '  '), 0);
 });
 
+test('URL paths, encoded Chinese, query values and hash routes are searchable', () => {
+  for (const [url, query] of [
+    ['https://example.org/alpha/beta', 'alpha beta'],
+    ['https://example.org/%E7%AD%BE%E5%AE%9D', '签宝'],
+    ['https://example.org/?q=%E7%AD%BE%E5%AE%9D', '签宝'],
+    ['https://example.org/#/alpha/beta', 'alpha beta'],
+    ['https://example.org/alpha', 'https://example.org/alpha'],
+    ['https://example.org/alpha', 'example.org/alpha']
+  ]) assert.ok(Rank.scoreTextMatch('', url, query) > 0, url);
+});
+
+test('dedup keys preserve hash routes and escaped query boundaries', () => {
+  assert.notEqual(Rank.normalizeUrlKey('https://app.example/#/one'), Rank.normalizeUrlKey('https://app.example/#/two'));
+  assert.notEqual(Rank.normalizeUrlKey('https://app.example/?a=x%26b%3Dy'), Rank.normalizeUrlKey('https://app.example/?a=x&b=y'));
+  assert.equal(Rank.normalizeUrlKey('https://www.example.org/path/?utm_source=ad&b=2&a=1'), Rank.normalizeUrlKey('https://example.org/path?a=1&b=2'));
+});
+
 test('worker returns empty local groups despite high visits and selection boosts', async () => {
   const query = 'ai totallynewtopic';
   const url = 'https://tools.example/';

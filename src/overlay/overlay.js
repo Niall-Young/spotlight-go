@@ -350,13 +350,13 @@
   }
 
   function handleKeydown(event) {
+    if (composing || event.isComposing || event.keyCode === 229) return;
     if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();
       closeOverlay();
       return;
     }
-    if (composing) return;
     if (event.key === 'Tab' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       // Tab / ↓ 向下选择、Shift+Tab / ↑ 向上选择，焦点始终锁在浮层内
       event.preventDefault();
