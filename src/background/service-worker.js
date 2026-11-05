@@ -124,7 +124,7 @@ function scheduleSuggestionPrefetch(query) {
 
 async function consumeSuggestions(query) {
   const q = query.trim();
-  if (!q) return { groups: { suggestion: [] } };
+  if (!q || directUrl(q)) return { groups: { suggestion: [] } };
   const entry = suggestionRequests.get(q);
   suggestionRequests.delete(q);
   const fetched = entry
@@ -163,7 +163,9 @@ async function localSearch(query) {
   const q = query.trim();
   if (!q) return { groups: { tab: [], bookmark: [], history: [] } };
 
-  scheduleSuggestionPrefetch(q);
+  const url = directUrl(q);
+  const direct = url ? [{ type: 'direct-search', title: q, query: q, url }] : [];
+  if (!url) scheduleSuggestionPrefetch(q);
 
   const stats = await loadSelectionStats();
   const sources = await loadSearchSources();
@@ -191,7 +193,7 @@ async function localSearch(query) {
     for (const item of unique) seen.add(Rank.normalizeUrlKey(item.url));
   }
 
-  return { groups: { tab, bookmark, history } };
+  return { groups: { direct, tab, bookmark, history } };
 }
 
 function selectionEntryFor(stats, query, url) {

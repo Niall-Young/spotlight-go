@@ -68,7 +68,7 @@
   * 本地结果零延迟即时渲染，不阻塞等待网络响应。
   * 输入变化时保留列表直到新结果替换，等待期间旧结果不可选择；本地结果先更新，搜索建议就绪后替换，忽略过期响应；输入法选词结束后按最终文字重新搜索，确认与取消选词不会触发结果打开或关闭浮层。
   * 网络建议到达或切换语言时保留当前选中项；单个本地搜索来源失败不影响其他来源，Google 建议超时后以独立超时请求 Bing。
-  * 输入网址后，无论搜索建议是否到达，原词条目均支持直接打开；新标签页在当前页打开，浮层在新标签页打开。
+  * 输入或粘贴网址后，「打开网址」置顶并默认选中，回车直接访问，不请求网络搜索建议；仍可用方向键选择本地结果。新标签页在当前页打开，浮层在新标签页打开。
 * **按键即刻捕获**：唤起浮层时瞬间保存首个按键输入，杜绝输入法与快速敲击导致的丢字丢词。
 * **不打断当前页面**：从浮层打开任何结果或发起网页搜索都会在新标签页中进行，当前页面始终保持原样（已有标签页仍直接切换）。
 * **特权页面智能回退**：在 Chrome 限制页面（如 `chrome://extensions`）中触发时，自动回退打开新标签页并聚焦搜索框。
@@ -268,7 +268,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
   * Local results render with zero latency while web suggestions arrive asynchronously.
   * Input changes keep the list visible until replacement results arrive, with outdated rows disabled; local results update first and suggestions replace the previous set when ready. Stale replies are discarded; completing IME composition searches the final text. Confirming or cancelling composition does not open results or close the overlay.
   * Suggestion updates and language changes preserve selection. A failed local source does not discard other sources; a Google timeout falls back to Bing with its own timeout.
-  * Original URL input opens directly whether suggestions have arrived or not: in the current tab from the new tab page, and in a new tab from the overlay.
+  * Typed or pasted URLs show an “Open URL” action first, selected by default. Enter opens the address without requesting network search suggestions; arrow keys still select local results. URLs open in the current tab from the new tab page, and in a new tab from the overlay.
 * **Input-Safe Trigger**: Preserves your keystrokes immediately upon invocation—no dropped characters even when typing quickly.
 * **Non-Disruptive Opening**: Results and web searches opened from the overlay always spawn a new tab—your current page is never navigated away (existing tabs are still switched to directly).
 * **Privileged Page Fallback**: When pressed on non-injectable internal pages (such as `chrome://`), automatically falls back to opening the new tab page and focusing the search bar.

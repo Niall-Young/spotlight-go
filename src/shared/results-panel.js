@@ -1,9 +1,10 @@
 (function () {
   'use strict';
 
-  const GROUP_ORDER = ['tab', 'bookmark', 'history', 'suggestion'];
+  const GROUP_ORDER = ['direct', 'tab', 'bookmark', 'history', 'suggestion'];
   // 分组名与操作提示在渲染时按当前语言取值，语言切换后由 repaint 重绘
   const GROUP_META = {
+    direct: { labelKey: 'group.direct', hintKey: 'hint.open' },
     suggestion: { labelKey: 'group.suggestion', hintKey: 'hint.suggestion' },
     tab: { labelKey: 'group.tab', hintKey: 'hint.tab' },
     bookmark: { labelKey: 'group.bookmark', hintKey: 'hint.open' },

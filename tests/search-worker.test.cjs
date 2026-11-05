@@ -58,13 +58,46 @@ test('a failed source preserves results from the remaining sources and web searc
 test('original URL input navigates consistently before and after suggestions arrive', async () => {
   for (const disposition of ['NEW_TAB', 'CURRENT_TAB']) {
     const s = setup();
-    const { groups } = await s.send({ type: 'search-suggestions', query: 'example.org/path' });
-    for (const item of [{ type: 'direct-search', query: 'example.org/path' }, groups.suggestion[0]]) {
+    const { groups } = await s.send({ type: 'search', query: 'example.org/path' });
+    await s.send({ type: 'search-suggestions', query: 'example.org/path' });
+    for (const item of [{ type: 'direct-search', query: 'example.org/path' }, groups.direct[0]]) {
       await s.send({ type: 'open', item, disposition });
       const last = s.calls.at(-1);
       assert.equal(last[0], disposition === 'CURRENT_TAB' ? 'update' : 'create');
       assert.equal(last[1].url, 'https://example.org/path');
     }
+  }
+});
+
+test('pasted URLs have a local direct action without requesting network suggestions', async () => {
+  for (const [query, expected] of [
+    [' https://example.org/path?q=hello%20world#part ', 'https://example.org/path?q=hello%20world#part'],
+    ['http://example.org:8080/path', 'http://example.org:8080/path'],
+    ['example.org/path', 'https://example.org/path'],
+    ['localhost:3000/path', 'https://localhost:3000/path'],
+    ['https://例子.测试/页面', new URL('https://例子.测试/页面').href]
+  ]) {
+    let networkRequests = 0;
+    const s = setup({ fetcher: async () => { networkRequests++; throw Error('unexpected fetch'); } });
+    const { groups } = await s.send({ type: 'search', query });
+    assert.equal(groups.direct.length, 1);
+    assert.equal(groups.direct[0].url, expected);
+    const suggestions = await s.send({ type: 'search-suggestions', query });
+    assert.equal(suggestions.groups.suggestion.length, 0);
+    assert.equal(networkRequests, 0);
+    await s.send({ type: 'open', item: groups.direct[0] });
+    assert.equal(s.calls.at(-1)[0], 'create');
+    assert.equal(s.calls.at(-1)[1].url, expected);
+  }
+});
+
+test('ordinary keywords and non-web schemes do not get a direct URL action', async () => {
+  const s = setup();
+  for (const query of ['e 签宝', 'hello world', 'javascript:alert(1)', 'file:///tmp/example', 'https://']) {
+    const { groups } = await s.send({ type: 'search', query });
+    assert.equal(groups.direct.length, 0, query);
+    await s.send({ type: 'open', item: { type: 'direct-search', query } });
+    assert.equal(s.calls.at(-1)[0], 'search', query);
   }
 });
 

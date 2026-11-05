@@ -26,7 +26,7 @@ class Element {
   }
 }
 
-test('suggestion merges and language repaints preserve the selected local result', () => {
+function setup() {
   const context = vm.createContext({
     URL,
     chrome: { runtime: { getURL: value => value } },
@@ -37,7 +37,11 @@ test('suggestion merges and language repaints preserve the selected local result
     }
   });
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/shared/results-panel.js'), 'utf8'), context);
-  const panel = context.SpotlightResults.create(new Element());
+  return context.SpotlightResults.create(new Element());
+}
+
+test('suggestion merges and language repaints preserve the selected local result', () => {
+  const panel = setup();
   const groups = { tab: [
     { title: 'Alpha first', url: 'https://a.example', tabId: 1 },
     { title: 'Alpha second', url: 'https://b.example', tabId: 2 }
@@ -51,4 +55,26 @@ test('suggestion merges and language repaints preserve the selected local result
   assert.equal(panel.getSelected().tabId, 2);
   panel.render(groups, 'new query');
   assert.equal(panel.getSelected().tabId, 1);
+});
+
+test('URL action is selected ahead of matching tabs and survives suggestion updates', () => {
+  const panel = setup();
+  const query = 'https://example.org/path';
+  panel.renderLocal({
+    direct: [{ type: 'direct-search', title: query, query, url: query }],
+    tab: [{ title: 'Existing page', tabId: 1, url: query + '/other' }]
+  }, query);
+  assert.equal(panel.getSelected().group, 'direct');
+  panel.mergeGroups({ suggestion: [] }, query);
+  assert.equal(panel.getSelected().url, query);
+  panel.repaint();
+  assert.equal(panel.getSelected().group, 'direct');
+  panel.moveSelection(1);
+  assert.equal(panel.getSelected().tabId, 1);
+  panel.repaint();
+  assert.equal(panel.getSelected().tabId, 1);
+  panel.beginQuery('ordinary keyword');
+  assert.equal(panel.getSelected(), null);
+  panel.renderLocal({ direct: [], tab: [] }, 'ordinary keyword');
+  assert.equal(panel.getSelected(), null);
 });
