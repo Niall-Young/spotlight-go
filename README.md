@@ -66,7 +66,7 @@
   * 标题与域名的精准匹配及前缀匹配享有最高权重；
   * 智能结合历史访问次数、最近访问时间以及用户过往选择行为动态打分；
   * 本地结果零延迟即时渲染，不阻塞等待网络响应。
-  * 输入变化即清除旧结果，忽略过期响应；输入法选词结束后按最终文字重新搜索，确认与取消选词不会触发结果打开或关闭浮层。
+  * 输入变化时保留列表直到新结果替换，等待期间旧结果不可选择；本地结果先更新，搜索建议就绪后替换，忽略过期响应；输入法选词结束后按最终文字重新搜索，确认与取消选词不会触发结果打开或关闭浮层。
   * 网络建议到达或切换语言时保留当前选中项；单个本地搜索来源失败不影响其他来源，Google 建议超时后以独立超时请求 Bing。
   * 输入网址后，无论搜索建议是否到达，原词条目均支持直接打开；新标签页在当前页打开，浮层在新标签页打开。
 * **按键即刻捕获**：唤起浮层时瞬间保存首个按键输入，杜绝输入法与快速敲击导致的丢字丢词。
@@ -266,7 +266,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
   * Exact & prefix matches on domain or title are heavily weighted.
   * Dynamically adjusted by visit counts, recency, and historical user selections.
   * Local results render with zero latency while web suggestions arrive asynchronously.
-  * Input changes clear previous results and discard stale replies; completing IME composition searches the final text. Confirming or cancelling composition does not open results or close the overlay.
+  * Input changes keep the list visible until replacement results arrive, with outdated rows disabled; local results update first and suggestions replace the previous set when ready. Stale replies are discarded; completing IME composition searches the final text. Confirming or cancelling composition does not open results or close the overlay.
   * Suggestion updates and language changes preserve selection. A failed local source does not discard other sources; a Google timeout falls back to Bing with its own timeout.
   * Original URL input opens directly whether suggestions have arrived or not: in the current tab from the new tab page, and in a new tab from the overlay.
 * **Input-Safe Trigger**: Preserves your keystrokes immediately upon invocation—no dropped characters even when typing quickly.

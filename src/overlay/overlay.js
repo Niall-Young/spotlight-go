@@ -319,16 +319,17 @@
 
   function sendSearch(query) {
     const seq = ++searchSeq;
-    panel.clear();
+    panel.beginQuery(query);
     // 本地结果先行渲染；网络建议由后台预取，随后合并到列表尾部
     chrome.runtime.sendMessage({ type: 'search', query }, (response) => {
-      if (chrome.runtime.lastError) return;
+      const failed = chrome.runtime.lastError;
       if (seq !== searchSeq || !panel || query !== input.value.trim()) return;
-      panel.render(response?.groups, query);
+      if (failed) { panel.clear(); return; }
+      panel.renderLocal(response?.groups, query);
       chrome.runtime.sendMessage({ type: 'search-suggestions', query }, (res) => {
-        if (chrome.runtime.lastError) return;
+        const failed = chrome.runtime.lastError;
         if (seq !== searchSeq || !panel || query !== input.value.trim()) return;
-        panel.mergeGroups({ suggestion: res?.groups?.suggestion || [] }, query);
+        panel.mergeGroups({ suggestion: failed ? [] : res?.groups?.suggestion || [] }, query);
       });
     });
   }
@@ -443,7 +444,7 @@
     input.addEventListener('compositionstart', () => {
       composing = true;
       searchSeq++;
-      panel.clear();
+      panel.beginQuery(input.value.trim());
     });
     input.addEventListener('compositionend', () => {
       composing = false;

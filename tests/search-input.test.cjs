@@ -12,6 +12,8 @@ for (const surface of ['newtab', 'overlay']) {
     let selected = null;
     const input = { value: 'e', addEventListener: (type, fn) => { listeners[type] = fn; } };
     const panel = {
+      beginQuery() { selected = null; },
+      renderLocal(groups) { this.render(groups); },
       clear() { selected = null; },
       render(groups) { selected = groups?.tab?.[0] || null; },
       mergeGroups(groups) { selected ||= groups?.suggestion?.[0] || null; }

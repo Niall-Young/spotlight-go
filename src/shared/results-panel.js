@@ -57,6 +57,8 @@
     let selectedIndex = -1;
     let currentQuery = '';
     let lastGroups = {};
+    let queryPending = false;
+    let suggestionsPending = false;
 
     function setSelected(index, scroll) {
       if (index === selectedIndex) return;
@@ -76,7 +78,7 @@
     }
 
     function getSelected() {
-      return selectedIndex >= 0 ? items[selectedIndex] || null : null;
+      return !queryPending && selectedIndex >= 0 ? items[selectedIndex] || null : null;
     }
 
     function buildItem(item, index, query) {
@@ -120,16 +122,37 @@
         : '';
       el.appendChild(hint);
 
-      el.addEventListener('mousemove', () => setSelected(index, false));
+      el.addEventListener('mousemove', () => {
+        if (!queryPending && index >= 0) setSelected(index, false);
+      });
       el.addEventListener('click', () => {
+        if (queryPending || index < 0) return;
         setSelected(index, false);
         if (opts.onSelect) opts.onSelect(item);
       });
       return el;
     }
 
-    function render(groups, query) {
-      lastGroups = {};
+    // 保留上一帧，等待期间不允许选择旧查询的结果
+    function beginQuery(query) {
+      queryPending = true;
+      suggestionsPending = true;
+      setSelected(-1, false);
+      container.setAttribute('aria-busy', 'true');
+    }
+
+    function renderLocal(groups, query) {
+      render(groups, query, true);
+    }
+
+    function render(groups, query, waitingForSuggestions) {
+      const previousSuggestions = lastGroups.suggestion;
+      queryPending = false;
+      suggestionsPending = !!waitingForSuggestions;
+      if (suggestionsPending) container.setAttribute('aria-busy', 'true');
+      else container.removeAttribute('aria-busy');
+      lastGroups = suggestionsPending && previousSuggestions
+        ? { suggestion: previousSuggestions } : {};
       const src = groups || {};
       for (const group of GROUP_ORDER) {
         if (Array.isArray(src[group])) lastGroups[group] = src[group];
@@ -139,6 +162,10 @@
 
     function mergeGroups(partial, query) {
       const src = partial || {};
+      if (Array.isArray(src.suggestion)) {
+        suggestionsPending = false;
+        container.removeAttribute('aria-busy');
+      }
       for (const group of Object.keys(src)) {
         if (Array.isArray(src[group])) lastGroups[group] = src[group];
       }
@@ -164,9 +191,12 @@
         groupEl.appendChild(label);
         for (const item of list) {
           const normalized = Object.assign({}, item, { group });
-          const index = items.length;
-          items.push(normalized);
-          groupEl.appendChild(buildItem(normalized, index, currentQuery));
+          const stale = suggestionsPending && group === 'suggestion';
+          const index = stale ? -1 : items.length;
+          if (!stale) items.push(normalized);
+          const node = buildItem(normalized, index, currentQuery);
+          if (stale) node.setAttribute('aria-disabled', 'true');
+          groupEl.appendChild(node);
         }
         container.appendChild(groupEl);
       }
@@ -180,12 +210,15 @@
     }
 
     function moveSelection(delta) {
-      if (items.length === 0) return;
+      if (queryPending || items.length === 0) return;
       const next = (selectedIndex + delta + items.length) % items.length;
       setSelected(next, true);
     }
 
     function clear() {
+      queryPending = false;
+      suggestionsPending = false;
+      container.removeAttribute('aria-busy');
       items = [];
       selectedIndex = -1;
       currentQuery = '';
@@ -204,6 +237,8 @@
 
     return {
       render,
+      beginQuery,
+      renderLocal,
       mergeGroups,
       repaint,
       clear,
