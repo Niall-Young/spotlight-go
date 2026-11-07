@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<title>Spotlight Go</title>
+<style>
+*{box-sizing:border-box}body{margin:0;color:#222435;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;background:#f0f1fc;overflow:hidden}
+.canvas{height:100vh;position:relative;overflow:hidden;background:radial-gradient(ellipse at 90% 100%,#c7c5fb 0,transparent 60%),radial-gradient(ellipse at 0 0,#d9efff 0,transparent 70%),#f4f4fc}
+.copy{position:absolute;left:92px;top:87px;z-index:2}.brand{display:flex;align-items:center;gap:15px;font-size:24px;font-weight:600;letter-spacing:-.6px}.brand img{width:50px;height:50px}
+h1{font-size:66px;line-height:1.18;letter-spacing:-2px;margin:36px 0 22px;font-weight:650}p{font-size:21px;color:#616477;margin:0;line-height:1.6}
+.preview{position:absolute;left:685px;top:90px;width:820px;height:513px;border:8px solid #ffffffa6;border-radius:22px;overflow:hidden;box-shadow:0 30px 80px #55538930;transform:rotate(-5deg)}.preview img{width:100%;height:100%;object-fit:cover}
+.key{margin-top:29px;display:inline-flex;align-items:center;gap:7px;font-size:15px;color:#65687b}.key span{border:1px solid #c7c9dc;background:#ffffff85;box-shadow:0 2px 0 #cdd0df;padding:7px 10px;border-radius:7px}
+body.small .copy{left:28px;top:24px}body.small .brand{font-size:18px;gap:9px}body.small .brand img{width:35px;height:35px}body.small h1{font-size:35px;letter-spacing:-1px;margin:21px 0 12px}body.small p{font-size:14px}body.small .key{margin-top:19px;font-size:12px}body.small .key span{padding:4px 7px}body.small .preview{display:none}body.small .canvas:after{content:"";position:absolute;width:175px;height:175px;right:-56px;bottom:-60px;border:28px solid #ada8f72e;border-radius:50%}
+</style>
+<body>
+<main class="canvas">
+  <div class="copy">
+    <div class="brand"><img src="../../assets/icon-128.png" alt="">spotlight-go</div>
+    <h1>搜索，即刻聚焦</h1>
+    <p>标签页、书签、历史，一处直达<br>让每个新标签页，清爽有序</p>
+    <div class="key"><span>⌥ / Alt</span><span>Space</span></div>
+  </div>
+  <div class="preview"><img src="screenshot-light-1280x800.png" alt="Spotlight Go 新标签页"></div>
+</main>
+<script>document.body.className=new URLSearchParams(location.search).get('layout')==='small'?'small':'marquee'</script>
+</body>
+</html>

@@ -205,6 +205,10 @@ node --test tests/*.test.cjs
 
 ---
 
+### Chrome 商店物料
+
+上传素材位于 [`docs/store-assets/`](docs/store-assets/)：128×128 商店图标、三张 1280×800 实际扩展界面截图、440×280 小宣传图和 1400×560 横幅。截图与宣传图均为无透明通道的 RGB PNG；`promo.html` 为两张宣传图的可编辑排版源文件。
+
 ### 📄 仓库文档与链接
 
 * [📜 MIT 开源协议](LICENSE)
@@ -402,6 +406,10 @@ node --test tests/*.test.cjs
 Tests use Node.js's built-in test runner without npm dependencies. Reload the extension for browser checks: preview, repeated imports, cancellation, save failures and persistence after reload, plus ordinary-page overlay, restricted-page fallback and new-tab search regression checks.
 
 ---
+
+### Chrome Web Store Assets
+
+Upload assets are in [`docs/store-assets/`](docs/store-assets/): a 128×128 store icon, three 1280×800 screenshots of the actual extension, a 440×280 small promo tile, and a 1400×560 marquee tile. Screenshots and promo tiles are RGB PNGs without transparency; `promo.html` is the editable layout source for both promo tiles.
 
 ### 📄 Repository Documents
 
