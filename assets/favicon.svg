@@ -1,12 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
   <title>Spotlight Go</title>
   <defs>
-    <linearGradient id="beam" x1="0" y1="1" x2=".8" y2="0">
-      <stop stop-color="#85c9ff"/>
-      <stop offset="1" stop-color="#f3faff"/>
+    <linearGradient id="bg" x1="2" y1="1" x2="14" y2="15" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#48C6FF"/>
+      <stop offset=".52" stop-color="#2478FF"/>
+      <stop offset="1" stop-color="#3C4BF2"/>
     </linearGradient>
   </defs>
-  <rect x="0" y="0" width="16" height="16" rx="4" fill="#768592"/>
-  <rect x=".75" y=".75" width="14.5" height="14.5" rx="3.25" fill="#29333e"/>
-  <path transform="translate(8 8) scale(1.142857) translate(-8 -8)" fill="url(#beam)" d="M5 8 A3.75 3.75 0 1 1 10.1 10.55 Q9.5 10.85 8.75 11 L3.5 12.2 L7.1 9.35 Q7.4 9.05 8.15 9.2 A2.15 2.15 0 1 0 6.35 7 Z"/>
+  <circle cx="8" cy="8" r="7.75" fill="url(#bg)"/>
+  <path
+    fill="#FFFFFF"
+    transform="translate(8 8) scale(1.06) translate(-7.9 -7.85)"
+    d="M5 8 A3.75 3.75 0 1 1 10.1 10.55 Q9.5 10.85 8.75 11 L3.5 12.2 L7.1 9.35 Q7.4 9.05 8.15 9.2 A2.15 2.15 0 1 0 6.35 7 Z"
+  />
 </svg>
