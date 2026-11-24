@@ -19,6 +19,11 @@ class Element {
   }
   set textContent(value) { this.text = value; this.children = []; }
   appendChild(child) { this.children.push(child); return child; }
+  removeChild(child) {
+    const idx = this.children.indexOf(child);
+    if (idx >= 0) this.children.splice(idx, 1);
+    return child;
+  }
   setAttribute(key, value) { this.attributes[key] = value; }
   removeAttribute(key) { delete this.attributes[key]; }
   addEventListener(type, fn) { this.listeners[type] = fn; }
@@ -86,12 +91,26 @@ test('local replies keep the suggestion section until fresh suggestions replace 
   assert.equal(opened.length, 0);
   panel.moveSelection(1);
   assert.equal(panel.getSelected().url, 'https://kit.example');
+  const localGroupBefore = container.children[0];
+  const localImgBefore = container.querySelectorAll('.sg-item')[0].children[0].children[0];
   panel.mergeGroups({ suggestion: [{ title: 'kitten', query: 'kitten' }] }, 'kit');
+  assert.equal(container.children[0], localGroupBefore);
+  assert.equal(container.querySelectorAll('.sg-item')[0].children[0].children[0], localImgBefore);
   assert.equal(container.attributes['aria-busy'], undefined);
   panel.moveSelection(1);
   assert.equal(panel.getSelected().query, 'kitten');
   container.querySelectorAll('.sg-item')[1].listeners.click();
   assert.equal(opened[0].query, 'kitten');
+});
+
+test('incremental local repaints reuse existing favicon img nodes for unchanged URLs', () => {
+  const { panel, container } = setup();
+  const initialImg = container.querySelectorAll('.sg-item')[0].children[0].children[0];
+  panel.beginQuery('mix');
+  panel.renderLocal({ bookmark: [{ title: 'Mixkit', url: 'https://mixkit.co' }] }, 'mix');
+  const nextImg = container.querySelectorAll('.sg-item')[0].children[0].children[0];
+  assert.equal(nextImg, initialImg);
+  assert.equal(nextImg.loading, undefined);
 });
 
 test('an empty local reply retains inert suggestions with visual highlight and clearing removes everything', () => {

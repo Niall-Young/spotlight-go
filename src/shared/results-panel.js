@@ -60,6 +60,27 @@
     let lastGroups = {};
     let queryPending = false;
     let suggestionsPending = false;
+    let localItemCount = 0;
+    let suggestionGroupEl = null;
+    // 缓存上一帧已解码的 favicon <img>，重绘时复用同一节点避免图标闪烁
+    let activeIcons = new Map();
+
+    function acquireFavicon(src, reusableIcons) {
+      const pool = reusableIcons && reusableIcons.get(src);
+      let img = pool && pool.length > 0 ? pool.pop() : null;
+      if (!img) {
+        img = document.createElement('img');
+        img.alt = '';
+        img.src = src;
+      }
+      let list = activeIcons.get(src);
+      if (!list) {
+        list = [];
+        activeIcons.set(src, list);
+      }
+      list.push(img);
+      return img;
+    }
 
     function setSelected(index, scroll) {
       // 首尾需滚完分组和容器的留白，而不只是把结果行露出来。
@@ -88,7 +109,7 @@
       return !queryPending && selectedIndex >= 0 ? items[selectedIndex] || null : null;
     }
 
-    function buildItem(item, index, query) {
+    function buildItem(item, index, query, reusableIcons) {
       const el = document.createElement('div');
       el.className = 'sg-item';
       el.setAttribute('role', 'option');
@@ -100,11 +121,7 @@
         icon.innerHTML =
           '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>';
       } else {
-        const img = document.createElement('img');
-        img.alt = '';
-        img.loading = 'lazy';
-        img.src = faviconUrl(item.url || '');
-        icon.appendChild(img);
+        icon.appendChild(acquireFavicon(faviconUrl(item.url || ''), reusableIcons));
       }
       el.appendChild(icon);
 
@@ -169,46 +186,84 @@
       paint(query);
     }
 
+    function buildGroup(group, list, query, reusableIcons) {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'sg-group';
+      const label = document.createElement('div');
+      label.className = 'sg-group-title';
+      const meta = GROUP_META[group] || {};
+      label.textContent = meta.labelKey ? t(meta.labelKey) : group;
+      groupEl.appendChild(label);
+      for (const item of list) {
+        const normalized = Object.assign({}, item, { group });
+        const stale = suggestionsPending && group === 'suggestion';
+        const index = stale ? -1 : items.length;
+        if (!stale) items.push(normalized);
+        const node = buildItem(normalized, index, query, reusableIcons);
+        if (stale) node.setAttribute('aria-disabled', 'true');
+        groupEl.appendChild(node);
+      }
+      return groupEl;
+    }
+
     function mergeGroups(partial, query) {
       const src = partial || {};
+      const keys = Object.keys(src);
       if (Array.isArray(src.suggestion)) {
         suggestionsPending = false;
         container.removeAttribute('aria-busy');
       }
-      for (const group of Object.keys(src)) {
+      for (const group of keys) {
         if (Array.isArray(src[group])) lastGroups[group] = src[group];
+      }
+      // 网络建议晚于本地结果返回时，仅原地替换末尾的建议分组，
+      // 不重建前面的本地分组 DOM，彻底避免本地结果的 favicon 重绘闪烁
+      const onlySuggestion = keys.length > 0 && keys.every((group) => group === 'suggestion');
+      if (
+        onlySuggestion &&
+        !queryPending &&
+        currentQuery === (query || '') &&
+        selectedIndex < localItemCount &&
+        typeof container.removeChild === 'function'
+      ) {
+        if (suggestionGroupEl) {
+          container.removeChild(suggestionGroupEl);
+          suggestionGroupEl = null;
+        }
+        items.length = localItemCount;
+        const list = lastGroups.suggestion;
+        if (Array.isArray(list) && list.length > 0) {
+          suggestionGroupEl = buildGroup('suggestion', list, currentQuery, null);
+          container.appendChild(suggestionGroupEl);
+        }
+        if (selectedIndex === -1 && items.length > 0) {
+          setSelected(0, false);
+        }
+        return;
       }
       paint(query);
     }
 
     function paint(query) {
       const previous = currentQuery === (query || '') ? getSelected() : null;
+      const reusableIcons = activeIcons;
+      activeIcons = new Map();
       currentQuery = query || '';
       items = [];
       selectedIndex = -1;
+      localItemCount = 0;
+      suggestionGroupEl = null;
       container.textContent = '';
       const src = lastGroups;
       for (const group of GROUP_ORDER) {
         const list = src[group];
         if (!Array.isArray(list) || list.length === 0) continue;
-        const groupEl = document.createElement('div');
-        groupEl.className = 'sg-group';
-        const label = document.createElement('div');
-        label.className = 'sg-group-title';
-        const meta = GROUP_META[group] || {};
-        label.textContent = meta.labelKey ? t(meta.labelKey) : group;
-        groupEl.appendChild(label);
-        for (const item of list) {
-          const normalized = Object.assign({}, item, { group });
-          const stale = suggestionsPending && group === 'suggestion';
-          const index = stale ? -1 : items.length;
-          if (!stale) items.push(normalized);
-          const node = buildItem(normalized, index, currentQuery);
-          if (stale) node.setAttribute('aria-disabled', 'true');
-          groupEl.appendChild(node);
-        }
+        if (group === 'suggestion') localItemCount = items.length;
+        const groupEl = buildGroup(group, list, currentQuery, reusableIcons);
+        if (group === 'suggestion') suggestionGroupEl = groupEl;
         container.appendChild(groupEl);
       }
+      if (!suggestionGroupEl) localItemCount = items.length;
       if (items.length > 0) {
         const previousIndex = previous ? items.findIndex((item) =>
           item.group === previous.group && item.url === previous.url &&
@@ -235,6 +290,9 @@
       container.removeAttribute('aria-busy');
       items = [];
       selectedIndex = -1;
+      localItemCount = 0;
+      suggestionGroupEl = null;
+      activeIcons = new Map();
       currentQuery = '';
       lastGroups = {};
       container.textContent = '';
