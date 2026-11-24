@@ -3,7 +3,6 @@
 
   const SHORTCUTS_KEY = 'pinnedShortcuts';
   const QUICK_MODE_KEY = 'quickLinksMode';
-  const CUSTOM_SHORTCUT_KEY = 'customShortcut';
   const SOURCES_KEY = 'searchSources';
   const THEME_KEY = 'themeMode';
   const STYLE_KEY = 'styleMode';
@@ -231,13 +230,7 @@
   const settingsFormOk = document.getElementById('nt-settings-form-ok');
   const settingsFormCancel = document.getElementById('nt-settings-form-cancel');
   const settingsShortcut = document.getElementById('nt-settings-shortcut');
-  const settingsShortcutView = document.getElementById('nt-settings-shortcut-view');
   const settingsShortcutEdit = document.getElementById('nt-settings-shortcut-edit');
-  const settingsShortcutCapture = document.getElementById('nt-settings-shortcut-capture');
-  const settingsShortcutPreview = document.getElementById('nt-settings-shortcut-preview');
-  const settingsShortcutHint = document.getElementById('nt-settings-shortcut-hint');
-  const settingsShortcutSave = document.getElementById('nt-settings-shortcut-save');
-  const settingsShortcutCancel = document.getElementById('nt-settings-shortcut-cancel');
   const sourceTab = document.getElementById('nt-settings-source-tab');
   const sourceBookmark = document.getElementById('nt-settings-source-bookmark');
   const sourceHistory = document.getElementById('nt-settings-source-history');
@@ -598,152 +591,62 @@
 
   const IS_MAC = /mac/i.test(navigator.platform || '');
   const DEFAULT_SHORTCUT_LABEL = IS_MAC ? '⌥ Space' : 'Ctrl+Shift+K';
+  const CHROME_SHORTCUTS_URL = 'chrome://extensions/shortcuts';
 
-  // 快捷键以 chrome.commands 字符串格式存储（如 "Alt+Space"），overlay 侧解析复用
+  // 格式化 chrome.commands 返回的快捷键（macOS 为符号串如 "⌥Space"，其他平台为 "Ctrl+Shift+K"）
   function formatShortcutLabel(shortcut) {
-    if (!shortcut) return DEFAULT_SHORTCUT_LABEL;
-    const parts = shortcut.split('+');
-    const key = parts.pop();
-    const modMap = IS_MAC
-      ? { Ctrl: '⌃', Command: '⌘', Alt: '⌥', Shift: '⇧' }
-      : { Ctrl: 'Ctrl', Command: 'Meta', Alt: 'Alt', Shift: 'Shift' };
-    const mods = parts.map((p) => modMap[p] || p);
-    if (IS_MAC) return mods.join('') + (key === 'Space' ? ' Space' : key);
-    return [...mods, key].join('+');
+    if (!shortcut) return i18n.t('settings.shortcut.unset');
+    if (shortcut.includes('+')) {
+      const parts = shortcut.split('+');
+      const key = parts.pop();
+      const modMap = IS_MAC
+        ? { Ctrl: '⌃', MacCtrl: '⌃', Command: '⌘', Alt: '⌥', Shift: '⇧' }
+        : { Ctrl: 'Ctrl', MacCtrl: 'Ctrl', Command: 'Meta', Alt: 'Alt', Shift: 'Shift' };
+      const mods = parts.map((p) => modMap[p] || p);
+      if (IS_MAC) return mods.join('') + (key === 'Space' ? ' Space' : key);
+      return [...mods, key].join('+');
+    }
+    if (IS_MAC) {
+      return shortcut.replace(/([⌃⌘⌥⇧])(Space)$/, '$1 $2');
+    }
+    return shortcut;
+  }
+
+  function setShortcutDisplay(text, unset) {
+    settingsShortcut.textContent = text;
+    settingsShortcut.classList.toggle('nt-kbd-unset', !!unset);
   }
 
   function refreshShortcutLabel() {
-    // 自定义快捷键优先；未自定义时读 chrome.commands 当前绑定，失败回退 manifest 默认键
-    chrome.storage.local.get(CUSTOM_SHORTCUT_KEY, (data) => {
-      if (chrome.runtime.lastError) return;
-      const custom = data[CUSTOM_SHORTCUT_KEY];
-      if (custom) {
-        settingsShortcut.textContent = formatShortcutLabel(custom);
-        return;
-      }
-      settingsShortcut.textContent = DEFAULT_SHORTCUT_LABEL;
-      try {
-        chrome.commands.getAll((commands) => {
-          if (chrome.runtime.lastError) return;
-          const cmd = (commands || []).find((c) => c.name === 'show-search');
-          if (cmd && cmd.shortcut) {
-            settingsShortcut.textContent = formatShortcutLabel(cmd.shortcut);
-          }
-        });
-      } catch (_) {
-        /* 忽略：保持默认展示 */
-      }
-    });
-  }
-
-  // 按下捕获：Chrome 不允许扩展程序化改键（无 commands.update），
-  // 这里把组合键存入 storage，overlay 的页面内监听据此唤起浮层
-  let capturing = false;
-  let capturedShortcut = null;
-
-  // 录入期间通知 background 忽略浏览器级快捷键（chrome.commands 在浏览器层
-  // 拦截按键，页面收不到 keydown，否则会直接触发唤起）
-  function setCaptureFlag(active) {
-    try {
-      chrome.runtime.sendMessage({ type: 'shortcut-capture', active });
-    } catch (_) {
-      /* 忽略：上下文失效 */
-    }
-  }
-
-  // 浏览器级快捷键会被 Chrome 拦截、无法录入，给出明确提示
-  function refreshCaptureHint() {
+    // 快捷键统一由 Chrome 扩展快捷键托管，直接读取 chrome.commands 当前绑定
     try {
       chrome.commands.getAll((commands) => {
-        if (chrome.runtime.lastError || !capturing) return;
+        if (chrome.runtime.lastError) {
+          setShortcutDisplay(DEFAULT_SHORTCUT_LABEL, false);
+          return;
+        }
         const cmd = (commands || []).find((c) => c.name === 'show-search');
         if (cmd && cmd.shortcut) {
-          settingsShortcutHint.textContent = i18n.t('settings.shortcut.browserHint', {
-            shortcut: formatShortcutLabel(cmd.shortcut)
-          });
-          settingsShortcutHint.hidden = false;
+          setShortcutDisplay(formatShortcutLabel(cmd.shortcut), false);
         } else {
-          settingsShortcutHint.hidden = true;
+          setShortcutDisplay(i18n.t('settings.shortcut.unset'), true);
         }
       });
     } catch (_) {
-      /* 忽略：保持提示隐藏 */
+      setShortcutDisplay(DEFAULT_SHORTCUT_LABEL, false);
     }
   }
 
-  function startCapture() {
-    capturing = true;
-    capturedShortcut = null;
-    settingsShortcutView.hidden = true;
-    settingsShortcutCapture.hidden = false;
-    settingsShortcutHint.hidden = true;
-    settingsShortcutPreview.textContent = i18n.t('settings.shortcut.press');
-    settingsShortcutPreview.classList.remove('nt-kbd-ready');
-    settingsShortcutSave.disabled = true;
-    setCaptureFlag(true);
-    refreshCaptureHint();
-  }
+  settingsShortcutEdit.addEventListener('click', () => {
+    chrome.tabs.create({ url: CHROME_SHORTCUTS_URL });
+  });
 
-  function stopCapture() {
-    if (capturing) setCaptureFlag(false);
-    capturing = false;
-    capturedShortcut = null;
-    settingsShortcutCapture.hidden = true;
-    settingsShortcutHint.hidden = true;
-    settingsShortcutView.hidden = false;
-  }
-
-  // 录入中切走或关闭标签页时解除 background 的忽略标记
+  // 从 chrome://extensions/shortcuts 修改完切回标签页时自动同步显示
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && capturing) setCaptureFlag(false);
+    if (!document.hidden && !settingsMask.hidden) refreshShortcutLabel();
   });
-  window.addEventListener('pagehide', () => {
-    if (capturing) setCaptureFlag(false);
-  });
-
-  // 组合键必须含修饰键，避免劫持普通输入；单独按修饰键不产生组合
-  function comboFromEvent(event) {
-    if (['Control', 'Shift', 'Alt', 'Meta'].includes(event.key)) return null;
-    const mods = [];
-    if (event.ctrlKey) mods.push('Ctrl');
-    if (event.metaKey) mods.push('Command');
-    if (event.altKey) mods.push('Alt');
-    if (event.shiftKey) mods.push('Shift');
-    if (mods.length === 0) return null;
-    // 键名取自 event.code（物理键位），与 overlay 端按 code 匹配的逻辑一致；
-    // 用 event.key 会在标点键（; , 等）上产出无法匹配的名字
-    const code = event.code || '';
-    let keyName;
-    if (/^Key[A-Z]$/.test(code)) keyName = code.slice(3);
-    else if (/^Digit[0-9]$/.test(code)) keyName = code.slice(5);
-    else keyName = code || event.key;
-    return [...mods, keyName].join('+');
-  }
-
-  document.addEventListener('keydown', (event) => {
-    if (!capturing) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    if (event.key === 'Escape') {
-      stopCapture();
-      return;
-    }
-    const combo = comboFromEvent(event);
-    if (!combo) return;
-    capturedShortcut = combo;
-    settingsShortcutPreview.textContent = formatShortcutLabel(combo);
-    settingsShortcutPreview.classList.add('nt-kbd-ready');
-    settingsShortcutSave.disabled = false;
-  }, true);
-
-  settingsShortcutEdit.addEventListener('click', startCapture);
-  settingsShortcutCancel.addEventListener('click', stopCapture);
-  settingsShortcutSave.addEventListener('click', () => {
-    if (!capturedShortcut) return;
-    chrome.storage.local.set({ [CUSTOM_SHORTCUT_KEY]: capturedShortcut }, () => {
-      stopCapture();
-      refreshShortcutLabel();
-    });
+  window.addEventListener('focus', () => {
+    if (!settingsMask.hidden) refreshShortcutLabel();
   });
 
   // ---------- 搜索内容开关 ----------
@@ -811,7 +714,6 @@
   }
 
   async function openSettings(editEntry) {
-    stopCapture();
     closeForm();
     settingsMask.hidden = false;
     // 从宫格右键「编辑」进入时直达快速入口分区；
@@ -824,7 +726,6 @@
   }
 
   function closeSettings() {
-    stopCapture();
     closeForm();
     settingsMask.hidden = true;
   }
@@ -1097,15 +998,13 @@
 
   let menuEntry = null;
 
-  // 语言切换时刷新动态生成的文案：内联表单按钮、快捷键录入占位、
+  // 语言切换时刷新动态生成的文案：内联表单按钮、快捷键状态、
   // 快速入口列表与结果面板（静态元素由 applyTranslations 处理）
   function refreshDynamicTexts() {
     if (formEntry !== undefined) {
       settingsFormOk.textContent = formEntry ? i18n.t('common.save') : i18n.t('common.add');
     }
-    if (!capturing) {
-      settingsShortcutPreview.textContent = i18n.t('settings.shortcut.press');
-    }
+    refreshShortcutLabel();
     renderSettingsList();
     if (!gridDrag) renderGridPage();
     panel.repaint();

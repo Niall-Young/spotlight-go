@@ -762,45 +762,13 @@ html[data-theme="dark"] body {
   color: var(--sg-text-secondary);
 }
 
-/* 快捷键：展示态与捕获态；控件同高，kbd 随按钮拉伸 */
+/* 快捷键：控件同高，kbd 随按钮拉伸 */
 .nt-settings-shortcut-view {
   display: flex;
   flex: 0 0 auto;
   align-items: stretch;
   justify-content: space-between;
   gap: 12px;
-}
-
-.nt-settings-shortcut-view[hidden] {
-  display: none;
-}
-
-.nt-settings-shortcut-capture {
-  display: flex;
-  flex: 0 1 auto;
-  align-items: stretch;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.nt-settings-capture-hint {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--sg-text-secondary);
-}
-
-.nt-settings-capture-hint[hidden] {
-  display: none;
-}
-
-.nt-settings-shortcut-capture[hidden] {
-  display: none;
-}
-
-.nt-settings-capture-actions {
-  display: flex;
-  gap: 8px;
-  flex: 0 0 auto;
 }
 
 .nt-kbd {
@@ -817,17 +785,8 @@ html[data-theme="dark"] body {
   white-space: nowrap;
 }
 
-.nt-kbd-capture {
-  flex: 0 1 200px;
-  min-width: 120px;
-  border-style: dashed;
-  border-color: var(--sg-text-secondary);
+.nt-kbd-unset {
   color: var(--sg-text-secondary);
-}
-
-.nt-kbd-capture.nt-kbd-ready {
-  border-style: solid;
-  color: var(--sg-text);
 }
 
 /* 快速入口：卡片列表，由外层内容区统一滚动 */

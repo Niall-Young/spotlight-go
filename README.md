@@ -82,7 +82,7 @@
   * 瓦片支持同页左右双向及跨行拖拽，实时预览落点并保存顺序；取消拖拽恢复原顺序，不支持跨页拖拽；
   * 自动解析并渲染站点高清 Favicon 图标。
 * **两种添加方式**：在「设置 → 快速入口」选择「简洁」（默认，保留原有首页）或「快速」。快速模式在全部网站末尾增加加号卡片，点击打开独立弹窗填写网址和可选名称；支持 Enter 添加、Escape 取消。加号占一个宫格位置，满页时进入下一页，不参与排序；保存后定位到新增网站所在页，重复网址只保留一份。
-* **轻量设置弹窗**：右下角悬浮按钮打开三段式设置面板——「通用」自定义浮层唤起快捷键（点击「更改」后按下组合键）、选择搜索来源（标签页 / 书签 / 历史记录）与界面语言（中文 / English）；「快速入口」以卡片列表内联新增、编辑、删除；「外观」选择主题（跟随系统 / 亮色 / 暗色）与四种视觉样式（亚克力 / 简约黑白 / 牛皮纸 / 少女粉），样式同时作用于新标签页与搜索浮层。
+* **轻量设置弹窗**：右下角悬浮按钮打开三段式设置面板——「通用」查看当前唤起快捷键（点击「更改」跳转 Chrome 扩展快捷键设置）、选择搜索来源（标签页 / 书签 / 历史记录）与界面语言（中文 / English）；「快速入口」以卡片列表内联新增、编辑、删除；「外观」选择主题（跟随系统 / 亮色 / 暗色）与四种视觉样式（亚克力 / 简约黑白 / 牛皮纸 / 少女粉），样式同时作用于新标签页与搜索浮层。
 * **中英双语界面**：新标签页与搜索浮层完整支持中文 / English，默认按浏览器语言显示（非中文一律英文），也可在设置「通用」中手动切换。
 * **右键快捷菜单**：右键点击瓦片支持直接修改网址与名称、删除快捷方式或在新标签页打开。
 
@@ -108,7 +108,7 @@
 搜索结果的键盘导航到首项或末项时停留，不循环跳转
 
 > [!TIP]
-> 在设置弹窗中点击「更改」，按下新的组合键并保存即可生效（Chrome 不允许扩展程序化改键，自定义绑定由扩展在页面内监听实现）；浏览器级默认快捷键仍由 Chrome 保留，可在 `chrome://extensions/shortcuts` 查看管理，并在 `chrome://` 等不可注入页面继续作为回退唤起方式。注意：浏览器级快捷键本身会被 Chrome 在浏览器层拦截，页面收不到按键事件，无法录入到捕获框中（录入期间该按键会被暂时忽略，不会触发唤起）。注意：浏览器级快捷键本身会被 Chrome 在浏览器层拦截，页面收不到按键事件，无法录入到捕获框中（录入期间该按键会被暂时忽略，不会触发唤起）。
+> 在设置弹窗中点击「更改」可直接打开 `chrome://extensions/shortcuts` 修改或移除唤起快捷键；快捷键统一由 Chrome 扩展快捷键托管，修改后旧快捷键会自动释放，避免双快捷键冲突，并支持在普通页面及 `chrome://` 页面生效。
 
 ---
 
@@ -138,7 +138,7 @@
 
 | 权限声明 | 用途解释 |
 | :--- | :--- |
-| `storage` | 保存用户自定义的快捷方式列表、浮层唤起快捷键、搜索来源开关及搜索选择频次统计（保存在 `chrome.storage.local`）。 |
+| `storage` | 保存用户自定义的快捷方式列表、外观与语言偏好、搜索来源开关及搜索选择频次统计（保存在 `chrome.storage.local`）。 |
 | `tabs` | 检索已打开的标签页并在选中时直接切换。 |
 | `bookmarks` | 本地检索用户的书签收藏夹。 |
 | `history` | 本地检索近 30 天的历史访问记录。 |
@@ -284,7 +284,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 * **Shared Results Panel**: Features the same fast, grouped search results experience as the overlay.
 * **Customizable Shortcut Grid**: Responsive grid layout that auto-adapts column counts, shows at most two rows with centered prev/next pager arrows when shortcuts overflow, supports bidirectional and cross-row drag-and-drop reordering within a page with live preview (cancelling restores the original order; cross-page dragging is not supported), and extracts high-resolution site favicons.
 * **Two Adding Modes**: Choose **Simple** (default, preserves the current layout) or **Quick** in **Settings → Quick Links**. Quick mode appends a plus tile after all websites; click it to open a standalone dialog for a URL and optional name, with Enter to add and Escape to cancel. The plus tile uses one grid slot, moves to the next page when full, and cannot be reordered. Saving shows the page containing the new website; duplicate URLs keep a single entry.
-* **Floating Settings Modal**: A bottom-right FAB opens a three-section settings modal — **General** (press-to-capture a custom overlay hotkey, toggle search sources: tabs / bookmarks / history, and UI language 中文 / English), **Quick Links** (manage quick-launch shortcuts as inline cards), and **Appearance** (theme: system / light / dark, plus four visual styles — Acrylic, Neutral, Paper, Pink — applied to both the new tab page and the search overlay).
+* **Floating Settings Modal**: A bottom-right FAB opens a three-section settings modal — **General** (view the current overlay hotkey and jump to Chrome extension shortcuts via **Change**, toggle search sources: tabs / bookmarks / history, and UI language 中文 / English), **Quick Links** (manage quick-launch shortcuts as inline cards), and **Appearance** (theme: system / light / dark, plus four visual styles — Acrylic, Neutral, Paper, Pink — applied to both the new tab page and the search overlay).
 * **Bilingual Interface**: Full Chinese / English UI across the new tab page and search overlay — defaults to the browser language (non-Chinese falls back to English) and can be switched manually in Settings → General.
 * **Right-Click Context Menu**: Right-click any shortcut tile to edit the URL/title, delete it, or open it in a new background tab.
 
@@ -310,7 +310,7 @@ Finding an open tab among dozens of windows, searching deeply nested bookmarks, 
 Keyboard navigation stops at the first and last search results without wrapping.
 
 > [!TIP]
-> Click **更改** (Change) in the settings modal, press a new key combo, and save — the overlay then listens for it on regular pages. Chrome does not allow extensions to reprogram browser-level shortcuts, so the default hotkey remains active as a fallback (including on `chrome://` pages) and can still be managed at `chrome://extensions/shortcuts`. The browser-level hotkey itself is intercepted by Chrome before the page sees it, so it cannot be captured in the press-to-capture box; it is temporarily ignored while you are recording a new combo.
+> Click **Change** in the settings modal to open `chrome://extensions/shortcuts` and update or remove the hotkey. Shortcuts are managed solely by Chrome's native extension shortcuts, so changes release the old key immediately without duplicate triggers and work across regular pages as well as `chrome://` pages.
 
 ---
 
@@ -340,7 +340,7 @@ We believe in radical transparency. Every permission requested in `manifest.json
 
 | Permission | Purpose |
 | :--- | :--- |
-| `storage` | Stores quick-launch shortcuts, the custom overlay hotkey, search-source toggles, and local ranking selection statistics (`chrome.storage.local`). |
+| `storage` | Stores quick-launch shortcuts, appearance and language preferences, search-source toggles, and local ranking selection statistics (`chrome.storage.local`). |
 | `tabs` | Allows searching and switching directly to already opened tabs. |
 | `bookmarks` | Allows indexing and searching your local browser bookmarks. |
 | `history` | Allows searching recent browsing history (past 30 days). |

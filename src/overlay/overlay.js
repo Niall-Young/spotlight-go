@@ -1,7 +1,6 @@
 (function () {
   'use strict';
 
-  const CUSTOM_SHORTCUT_KEY = 'customShortcut';
   const THEME_KEY = 'themeMode';
   const STYLE_KEY = 'styleMode';
 
@@ -17,7 +16,6 @@
   let composing = false;
   let cssPromise = null;
   let pendingKeys = null;
-  let trigger = null;
   let themeMode = 'system';
   let styleMode = 'acrylic';
 
@@ -122,81 +120,10 @@
     }
   }
 
-  // 等待 show-overlay 消息存在空窗（service worker 冷启动可达秒级），
-  // 空窗内敲下的字符会落进宿主页面当前聚焦的输入框。故在页面内识别到
-  // 快捷键 keydown 时同步打开浮层，不等消息；绑定优先级：设置弹窗保存的
-  // 自定义快捷键 > chrome.commands 当前绑定 > manifest 默认键。
-  function defaultTrigger() {
-    const mac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-    return mac
-      ? { alt: true, ctrl: false, shift: false, meta: false, code: 'Space' }
-      : { alt: false, ctrl: true, shift: true, meta: false, code: 'KeyK' };
-  }
-
-  function keyNameToCode(name) {
-    if (/^[A-Z]$/.test(name)) return `Key${name}`;
-    if (/^[0-9]$/.test(name)) return `Digit${name}`;
-    return name;
-  }
-
-  function parseShortcut(shortcut) {
-    if (!shortcut) return null;
-    const parts = shortcut.split('+');
-    const parsed = {
-      alt: false,
-      ctrl: false,
-      shift: false,
-      meta: false,
-      code: keyNameToCode(parts.pop())
-    };
-    for (const part of parts) {
-      if (part === 'Alt') parsed.alt = true;
-      else if (part === 'Ctrl' || part === 'MacCtrl') parsed.ctrl = true;
-      else if (part === 'Shift') parsed.shift = true;
-      else if (part === 'Command') parsed.meta = true;
-      else return null;
-    }
-    return parsed;
-  }
-
-  function loadTrigger() {
-    // 设置弹窗里捕获的自定义快捷键优先；未设置时跟随 chrome.commands 绑定
-    try {
-      chrome.storage.local.get(CUSTOM_SHORTCUT_KEY, (data) => {
-        if (chrome.runtime.lastError) return;
-        const parsed = parseShortcut(data[CUSTOM_SHORTCUT_KEY]);
-        if (parsed) {
-          trigger = parsed;
-          return;
-        }
-        loadCommandTrigger();
-      });
-    } catch (_) {
-      // 扩展上下文失效（如扩展刚重载），保留默认绑定
-    }
-  }
-
-  function loadCommandTrigger() {
-    try {
-      chrome.runtime.sendMessage({ type: 'get-commands' }, (response) => {
-        if (chrome.runtime.lastError) return;
-        const entry = (response || []).find((c) => c.name === 'show-search');
-        const parsed = parseShortcut(entry?.shortcut);
-        if (parsed) trigger = parsed;
-      });
-    } catch (_) {
-      // 扩展上下文失效（如扩展刚重载），保留默认绑定
-    }
-  }
-
-  // 设置弹窗保存自定义快捷键/主题后，已打开页面无需刷新即生效
+  // 设置弹窗保存主题/样式后，已打开页面无需刷新即生效
   try {
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local') return;
-      if (CUSTOM_SHORTCUT_KEY in changes) {
-        trigger = null;
-        loadTrigger();
-      }
       if (THEME_KEY in changes) {
         const mode = changes[THEME_KEY].newValue;
         themeMode = mode === 'light' || mode === 'dark' ? mode : 'system';
@@ -211,17 +138,6 @@
     /* 忽略：上下文失效 */
   }
 
-  function matchesTrigger(event) {
-    const t = trigger || (trigger = defaultTrigger());
-    return (
-      event.code === t.code &&
-      event.altKey === t.alt &&
-      event.ctrlKey === t.ctrl &&
-      event.shiftKey === t.shift &&
-      event.metaKey === t.meta
-    );
-  }
-
   function isNavKey(event) {
     return event.key === 'Escape' || event.key === 'Tab' || event.key === 'Enter' ||
       event.key === 'ArrowUp' || event.key === 'ArrowDown';
@@ -229,23 +145,16 @@
 
   // 统一的 window 捕获层按键处理。内容脚本 document_start 注册，捕获阶段
   // 先于宿主页面任何监听触发，故能抢在页面前拦下按键：
-  // - 浮层未开时识别唤起快捷键；
   // - 唤起过渡期缓冲已敲字符；
   // - 浮层打开后对整个生命周期持续拦截，杜绝聊天类页面的全局 keydown
   //   监听在事件到达输入框前抢走首字符（首字母被吞的根因）。
+  // 唤起快捷键统一由 Chrome 浏览器层（chrome.commands）管理并派发 show-overlay。
   function captureKeyDown(event) {
     if (!event.isTrusted) return;
 
     if (!host) {
       if (pendingKeys !== null) {
         bufferKeydown(event);
-        return;
-      }
-      if (matchesTrigger(event)) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        startKeyBuffer();
-        openOverlay();
       }
       return;
     }
@@ -301,11 +210,10 @@
     }
   }
 
-  // 在页面脚本注册按键监听前占位；唤起、过渡、打开三态统一在此拦截。
+  // 在页面脚本注册按键监听前占位；过渡与打开两态统一在此拦截。
   window.addEventListener('keydown', captureKeyDown, true);
   window.addEventListener('keypress', captureKeyPress, true);
   window.addEventListener('paste', capturePaste, true);
-  loadTrigger();
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message?.type === 'show-overlay') {

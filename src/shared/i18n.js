@@ -54,12 +54,9 @@
       'settings.language.name': '语言',
       'settings.language.desc': '新标签页与搜索浮层的界面语言',
       'settings.shortcut.name': '快捷键',
-      'settings.shortcut.desc': '在普通页面唤起聚焦搜索',
+      'settings.shortcut.desc': '唤起聚焦搜索，前往浏览器快捷键设置修改',
       'settings.shortcut.change': '更改',
-      'settings.shortcut.press': '按下新的快捷键…',
-      'settings.shortcut.browserHint':
-        '浏览器级快捷键 {shortcut} 会被 Chrome 直接拦截并触发唤起，无法在此录入；' +
-        '可在 chrome://extensions/shortcuts 修改或移除该绑定',
+      'settings.shortcut.unset': '未设置',
       'settings.shortcuts.name': '快速入口',
       'settings.shortcuts.desc': '展示在新标签页宫格中的常用网站',
       'settings.shortcuts.add': '+ 添加',
@@ -143,12 +140,9 @@
       'settings.language.name': 'Language',
       'settings.language.desc': 'Language of the new tab page and search overlay',
       'settings.shortcut.name': 'Shortcut',
-      'settings.shortcut.desc': 'Invoke Spotlight Search on regular pages',
+      'settings.shortcut.desc': 'Invoke Spotlight Search; change in Chrome extension shortcuts',
       'settings.shortcut.change': 'Change',
-      'settings.shortcut.press': 'Press a new shortcut…',
-      'settings.shortcut.browserHint':
-        'The browser-level shortcut {shortcut} is intercepted by Chrome and triggers the overlay, ' +
-        'so it cannot be captured here; change or remove it at chrome://extensions/shortcuts.',
+      'settings.shortcut.unset': 'Not set',
       'settings.shortcuts.name': 'Quick Links',
       'settings.shortcuts.desc': 'Frequently used sites shown in the new tab grid',
       'settings.shortcuts.add': '+ Add',
