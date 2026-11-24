@@ -10,7 +10,12 @@ class Element {
     this.dataset = {};
     this.listeners = {};
     this.attributes = {};
-    this.classList = { add() {}, remove() {} };
+    this.classes = new Set();
+    this.classList = {
+      add: name => this.classes.add(name),
+      remove: name => this.classes.delete(name),
+      contains: name => this.classes.has(name)
+    };
   }
   set textContent(value) { this.text = value; this.children = []; }
   appendChild(child) { this.children.push(child); return child; }
@@ -47,17 +52,21 @@ function setup() {
   return { panel, container, opened };
 }
 
-test('query updates retain visible rows but prevent clicking or navigating old results', () => {
+test('query updates retain visible rows and highlight without letting old results activate', () => {
   const { panel, container, opened } = setup();
   const previous = container.children.slice();
+  const rowsBefore = container.querySelectorAll('.sg-item');
+  assert.equal(rowsBefore[0].classList.contains('sg-selected'), true);
   panel.beginQuery('kit');
   assert.deepEqual(container.children, previous);
+  assert.equal(rowsBefore[0].classList.contains('sg-selected'), true);
   assert.equal(panel.getSelected(), null);
   panel.moveSelection(1);
   for (const row of container.querySelectorAll('.sg-item')) {
     row.listeners.mousemove();
     row.listeners.click();
   }
+  assert.equal(rowsBefore[0].classList.contains('sg-selected'), true);
   assert.equal(panel.getSelected(), null);
   assert.equal(opened.length, 0);
 });
@@ -85,12 +94,17 @@ test('local replies keep the suggestion section until fresh suggestions replace 
   assert.equal(opened[0].query, 'kitten');
 });
 
-test('an empty local reply retains inert suggestions and clearing removes everything', () => {
-  const { panel, container } = setup();
+test('an empty local reply retains inert suggestions with visual highlight and clearing removes everything', () => {
+  const { panel, container, opened } = setup();
   panel.beginQuery('xyz');
   panel.renderLocal({}, 'xyz');
   assert.equal(container.children.length, 1);
+  const rows = container.querySelectorAll('.sg-item');
+  assert.equal(rows[0].classList.contains('sg-selected'), true);
+  assert.equal(rows[0].attributes['aria-selected'], undefined);
   assert.equal(panel.getSelected(), null);
+  rows[0].listeners.click();
+  assert.equal(opened.length, 0);
   panel.clear();
   assert.equal(container.children.length, 0);
   assert.equal(container.attributes['aria-busy'], undefined);

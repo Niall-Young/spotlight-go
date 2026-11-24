@@ -140,12 +140,14 @@
       return el;
     }
 
-    // 保留上一帧，等待期间不允许选择旧查询的结果
+    // 保留上一帧及当前视觉高亮，避免输入过程中选中态闪烁；
+    // queryPending 期间 getSelected / 导航 / 点击均已拦截，不会误触旧结果
     function beginQuery(query) {
+      const hadSelection = !queryPending && selectedIndex >= 0;
       queryPending = true;
       suggestionsPending = true;
-      setSelected(-1, false);
       container.setAttribute('aria-busy', 'true');
+      if (hadSelection && opts.onSelectionChange) opts.onSelectionChange(null);
     }
 
     function renderLocal(groups, query) {
@@ -213,6 +215,11 @@
           item.tabId === previous.tabId && item.query === previous.query
         ) : -1;
         setSelected(previousIndex >= 0 ? previousIndex : 0, false);
+      } else if (suggestionsPending) {
+        // 本地无匹配、仅保留上一帧网络建议等待新建议时，保持首行视觉高亮不闪灭；
+        // selectedIndex 仍为 -1，不会误触发旧建议的回车或点击
+        const firstNode = container.querySelectorAll('.sg-item')[0];
+        if (firstNode) firstNode.classList.add('sg-selected');
       }
     }
 
