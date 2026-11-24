@@ -244,6 +244,9 @@
   const settingsClose = document.getElementById('nt-settings-close');
 
   let searchSeq = 0;
+  let lastSearchedQuery = '';
+  let localSearchPending = false;
+  let pendingSubmitSeq = 0;
   let composing = false;
 
   const panel = window.SpotlightResults.create(resultsEl, {
@@ -269,13 +272,30 @@
 
   function sendSearch(query) {
     const seq = ++searchSeq;
+    lastSearchedQuery = query;
+    localSearchPending = true;
+    pendingSubmitSeq = 0;
     panel.beginQuery(query);
     // 本地结果先行渲染；网络建议由后台预取，随后合并到列表尾部
     chrome.runtime.sendMessage({ type: 'search', query }, (response) => {
       const failed = chrome.runtime.lastError;
       if (seq !== searchSeq || query !== input.value.trim()) return;
-      if (failed) { panel.clear(); return; }
+      localSearchPending = false;
+      const shouldSubmit = pendingSubmitSeq === seq;
+      pendingSubmitSeq = 0;
+      if (failed) {
+        lastSearchedQuery = '';
+        panel.clear();
+        if (shouldSubmit) doDirectSearch(query);
+        return;
+      }
       panel.renderLocal(response?.groups, query);
+      if (shouldSubmit) {
+        const selected = panel.getSelected();
+        if (selected) openItem(selected);
+        else doDirectSearch(query);
+        return;
+      }
       chrome.runtime.sendMessage({ type: 'search-suggestions', query }, (res) => {
         const failed = chrome.runtime.lastError;
         if (seq !== searchSeq || query !== input.value.trim()) return;
@@ -285,12 +305,17 @@
   }
 
   function onInput() {
+    if (composing) return;
     const query = input.value.trim();
     if (!query) {
       searchSeq++;
+      lastSearchedQuery = '';
+      localSearchPending = false;
+      pendingSubmitSeq = 0;
       panel.clear();
       return;
     }
+    if (query === lastSearchedQuery) return;
     sendSearch(query);
   }
 
@@ -303,6 +328,9 @@
         event.preventDefault();
         input.value = '';
         searchSeq++;
+        lastSearchedQuery = '';
+        localSearchPending = false;
+        pendingSubmitSeq = 0;
         panel.clear();
       }
       return;
@@ -320,7 +348,12 @@
         openItem(selected);
       } else {
         const query = input.value.trim();
-        if (query) doDirectSearch(query);
+        if (!query) return;
+        if (localSearchPending && query === lastSearchedQuery) {
+          pendingSubmitSeq = searchSeq;
+          return;
+        }
+        doDirectSearch(query);
       }
     }
   });
@@ -328,6 +361,9 @@
   input.addEventListener('compositionstart', () => {
     composing = true;
     searchSeq++;
+    lastSearchedQuery = '';
+    localSearchPending = false;
+    pendingSubmitSeq = 0;
     panel.beginQuery(input.value.trim());
   });
   input.addEventListener('compositionend', () => {
