@@ -2,13 +2,14 @@
   'use strict';
 
   const GROUP_ORDER = ['direct', 'tab', 'bookmark', 'history', 'suggestion'];
-  // 分组名与操作提示在渲染时按当前语言取值，语言切换后由 repaint 重绘
+  // 分组名与操作提示在渲染时按当前语言取值，语言切换后由 repaint 重绘；
+  // 仅非默认操作（搜索建议、切换标签页）需要提示，打开类结果不显示提示
   const GROUP_META = {
-    direct: { labelKey: 'group.direct', hintKey: 'hint.open' },
+    direct: { labelKey: 'group.direct' },
     suggestion: { labelKey: 'group.suggestion', hintKey: 'hint.suggestion' },
     tab: { labelKey: 'group.tab', hintKey: 'hint.tab' },
-    bookmark: { labelKey: 'group.bookmark', hintKey: 'hint.open' },
-    history: { labelKey: 'group.history', hintKey: 'hint.open' }
+    bookmark: { labelKey: 'group.bookmark' },
+    history: { labelKey: 'group.history' }
   };
 
   function t(key) {
@@ -139,12 +140,13 @@
       }
       el.appendChild(text);
 
-      const hint = document.createElement('div');
-      hint.className = 'sg-item-hint';
-      hint.textContent = (GROUP_META[item.group] || {}).hintKey
-        ? t(GROUP_META[item.group].hintKey)
-        : '';
-      el.appendChild(hint);
+      const hintKey = (GROUP_META[item.group] || {}).hintKey;
+      if (hintKey) {
+        const hint = document.createElement('div');
+        hint.className = 'sg-item-hint';
+        hint.textContent = t(hintKey);
+        el.appendChild(hint);
+      }
 
       el.addEventListener('mousemove', () => {
         if (!queryPending && index >= 0) setSelected(index, false);

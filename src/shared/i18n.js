@@ -93,7 +93,6 @@
       'group.history': '历史',
       'hint.suggestion': '搜索',
       'hint.tab': '切换',
-      'hint.open': '打开',
       'overlay.placeholder': '搜索标签页、书签、历史与网页…'
     },
     en: {
@@ -183,7 +182,6 @@
       'group.history': 'History',
       'hint.suggestion': 'Search',
       'hint.tab': 'Switch',
-      'hint.open': 'Open',
       'overlay.placeholder': 'Search tabs, bookmarks, history and the web…'
     }
   };
